@@ -31,9 +31,11 @@ public class firebase_service extends Service {
     public firebase_service() {
 
         db = FirebaseDatabase.getInstance();
-        dbRef = db.getReference("somedata");
+        dbRef = db.getReference("test");
 
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        FirebaseDatabase.getInstance();
+
+        dbRef.setValue("Hello, World!");
 
 
         dbRef.addValueEventListener(new ValueEventListener() {

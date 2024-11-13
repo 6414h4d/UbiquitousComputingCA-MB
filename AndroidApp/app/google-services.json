@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "247965346414",
+    "firebase_url": "https://microbitca-b8446-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "microbitca-b8446",
+    "storage_bucket": "microbitca-b8446.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247965346414:android:6c8801bbd00a8c0587d47f",
+        "android_client_info": {
+          "package_name": "com.example.microbitca"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDELGQBON4jlSFyU5pUMc8Sn2BYm0s_veE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

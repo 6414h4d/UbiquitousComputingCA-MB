@@ -2,8 +2,12 @@ package com.example.microbitca;
 
 import android.app.Service;
 import android.content.Intent;
+import android.health.connect.datatypes.units.Power;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -11,12 +15,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-/*
-Add Firebase connectivity
-When the app is started, attempt to connect to the database.
-If the connection fails, create a toast to alert the user
+import java.util.ArrayList;
+import java.util.List;
 
- */
 public class firebase_service extends Service {
     FirebaseDatabase db;
     DatabaseReference dbRef;
@@ -31,12 +32,11 @@ public class firebase_service extends Service {
     public firebase_service() {
 
         db = FirebaseDatabase.getInstance();
-        dbRef = db.getReference("test");
+        dbRef = db.getReference("pastTests");
 
         FirebaseDatabase.getInstance();
 
-        dbRef.setValue("Hello, World!");
-
+        dbRef.setValue("18");
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -44,14 +44,26 @@ public class firebase_service extends Service {
                 String value = dataSnapshot.getValue(String.class);
                 Toast.makeText(getApplicationContext(),"somedata value is: " + value, Toast.LENGTH_LONG).show();
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Toast.makeText(firebase_service.this, "Firebase conn Cancelled", Toast.LENGTH_SHORT).show();
             }
         });
-    }
 
+        dbRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String value = dataSnapshot.getValue(String.class);
+                Toast.makeText(firebase_service.this, "Value is"+value,Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+    }
+    
 
     @Override
     public IBinder onBind(Intent intent) {

@@ -24,5 +24,6 @@ public class MainActivity extends AppCompatActivity {
 
         startService(new Intent(this, firebase_service.class));
 
+
     }
 }

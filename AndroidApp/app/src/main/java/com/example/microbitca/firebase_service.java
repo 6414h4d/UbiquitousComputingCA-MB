@@ -36,17 +36,17 @@ public class firebase_service extends Service {
 
         FirebaseDatabase.getInstance();
 
-        dbRef.setValue("18");
+        //dbRef.setValue("18");
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String value = dataSnapshot.getValue(String.class);
-                Toast.makeText(getApplicationContext(),"somedata value is: " + value, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(),"somedata value is: " + value, Toast.LENGTH_LONG).show();
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(firebase_service.this, "Firebase conn Cancelled", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(firebase_service.this, "Firebase conn Cancelled", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -54,7 +54,7 @@ public class firebase_service extends Service {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String value = dataSnapshot.getValue(String.class);
-                Toast.makeText(firebase_service.this, "Value is"+value,Toast.LENGTH_LONG).show();
+                //Toast.makeText(firebase_service.this, "Value is"+value,Toast.LENGTH_LONG).show();
             }
 
             @Override

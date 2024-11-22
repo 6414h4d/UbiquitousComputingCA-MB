@@ -1,12 +1,23 @@
 # MakeCode
-#built
-# node_modules
-# yotta_modules
-# yotta_targets
-# pxt_modules
-# .pxt
-# _site
-# *.db
-# *.tgz
-# .header.json
-# .simstate.json
+built
+node_modules
+yotta_modules
+yotta_targets
+pxt_modules
+.pxt
+_site
+*.db
+*.tgz
+.header.json
+.simstate.json
+
+
+.gradle
+**/build/
+!src/**build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+!gradle-wrapper.properties
+!gradletasknamecache
+

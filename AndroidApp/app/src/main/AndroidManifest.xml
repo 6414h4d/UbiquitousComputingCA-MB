@@ -26,9 +26,15 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name=".LoginActivity"
             android:exported="false"
-            android:label="@string/title_activity_login" />
+            android:label="activity_login" />
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:label="activity_register" />
+
         <service
             android:name=".BLEService"
             android:enabled="true"

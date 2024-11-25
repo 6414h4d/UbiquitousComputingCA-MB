@@ -30,14 +30,13 @@ public class firebase_service extends Service {
     public void onDestroy(){}
 
     public firebase_service() {
+        PunchPowerModel punch = new PunchPowerModel("58", "12343");
 
         db = FirebaseDatabase.getInstance();
         dbRef = db.getReference("TopScores");
 
         FirebaseDatabase.getInstance();
 
-        int[] Scores = {58, 78, 28, 18, 38, 18, 28, 18, 49, 48, 57};
-        dbRef.setValue(Scores);
 
         dbRef.addValueEventListener(new ValueEventListener() {
             @Override

@@ -23,32 +23,32 @@ public class firebase_service extends Service {
     DatabaseReference dbRef;
 
     public void onCreate(){
-        Toast.makeText(this, "Firebase Service started", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Firebase Service started", Toast.LENGTH_SHORT).show();
     }
 
     public void onStart(Intent intent, int startid){}
     public void onDestroy(){}
 
     public firebase_service() {
-        PunchPowerModel punch = new PunchPowerModel("58", "12343");
+//        PunchPowerModel punch = new PunchPowerModel("58", "12343");
 
         db = FirebaseDatabase.getInstance();
-        dbRef = db.getReference("TopScores");
+//        dbRef = db.getReference("TopScores");
 
         FirebaseDatabase.getInstance();
 
 
-        dbRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String value = dataSnapshot.getValue(String.class);
-                //Toast.makeText(getApplicationContext(),"somedata value is: " + value, Toast.LENGTH_LONG).show();
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                //Toast.makeText(firebase_service.this, "Firebase conn Cancelled", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        dbRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                String value = dataSnapshot.getValue(String.class);
+//                //Toast.makeText(getApplicationContext(),"somedata value is: " + value, Toast.LENGTH_LONG).show();
+//            }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                //Toast.makeText(firebase_service.this, "Firebase conn Cancelled", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
 //        dbRef.addValueEventListener(new ValueEventListener() {
 //            @Override

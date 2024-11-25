@@ -218,7 +218,7 @@ public class BLEService extends Service {
             }
             else if (numMeasurements == 100) {
                 t = System.currentTimeMillis();
-                float hz = 100.0f/(t-t0)*1000;
+                float hz = 100.0f/(t-t0)*100;
                 Log.i(TAG, "HZ: " + hz);
                 numMeasurements=0;
             }

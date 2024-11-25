@@ -41,9 +41,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         if(!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
-
         startService(new Intent(this, firebase_service.class));
-        TenPunchTest();
+//        TenPunchTest();
     }
 
     BLEService service;
@@ -111,34 +110,36 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         *
         * An array of data is saved and the highest value be taken from it and moved to the array as this will be the maximum power of the punch.
         *
+        * Empty the array after the highest value has been selected and moved to the punch array.
+        *
         */
+
+        String[] punchData = new String[500];
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // create the notification channel
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID,
-                    "NOTIFICATION_CHANNEL_NAME",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,"NOTIFICATION_CHANNEL_NAME",NotificationManager.IMPORTANCE_HIGH);
             // 'build' the notification
             notificationChannel.enableVibration(true);
             notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
 
+        while ( xG >= 1000 ) {
+            Log.i("MovementDetected:", String.valueOf(xG));
+            xG =0;
+
+        }
         // Create the notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Punch Detected").setContentText("X Value"+xG).setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
+                .setContentTitle("Punch Detected").setContentText("X Value"+xG)
+                .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true);
 
         // Display the notification
         mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
-
-
     }
 
     public void TenPunchTest(){
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             counter++;
 
             if (i == count){
-                Toast.makeText(this, "I = "+i+" Count = "+count+"Counter: "+counter, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "I = "+i+" Count = "+count+"Counter: "+counter, Toast.LENGTH_SHORT).show();
             }
         }
     }

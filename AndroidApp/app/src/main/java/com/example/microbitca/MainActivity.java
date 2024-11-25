@@ -139,6 +139,9 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
     }
 
-    private void delay(int i) {
+    public void TenPunchTest(){
+
     }
+
+
 }

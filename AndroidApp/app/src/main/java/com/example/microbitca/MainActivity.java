@@ -104,7 +104,14 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        delay(1000);
+        /*
+        * Take recieved data and pass it to the punch array.
+        * This function should only be allowed to send data once every couple of seconds to stop the array from being filled too quickly
+        * A threshold value for what data will be selected is set to further help with weeding out false positives.
+        *
+        * An array of data is saved and the highest value be taken from it and moved to the array as this will be the maximum power of the punch.
+        *
+        */
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 
@@ -125,18 +132,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Create the notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Punch Detected")
-                .setContentText("X Value"+xG)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentTitle("Punch Detected").setContentText("X Value"+xG).setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         // Display the notification
         mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
 
-
-
-
-//        Log.i("MOVEMENT-DETECTED", "X value "+xG+" Z value"+zG );
 
     }
 
@@ -146,11 +147,13 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         * Push to array
         * When finished, push to database
         * */
-        int count = 10;
-        for(int i = 0; i < count; i++){
+        int count = 9;
+        int counter =0;
+        for(int i = 0; i <= count; i++){
+            counter++;
 
             if (i == count){
-                Toast.makeText(this, i+" "+count, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "I = "+i+" Count = "+count+"Counter: "+counter, Toast.LENGTH_SHORT).show();
             }
         }
     }

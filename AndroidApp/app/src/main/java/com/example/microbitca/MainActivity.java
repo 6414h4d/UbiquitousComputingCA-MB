@@ -127,7 +127,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
 
-        while ( xG >= 1000 ) {
+        while ( xG >= 800 ) {
+//            xG = xG*10;
             Log.i("MovementDetected:", String.valueOf(xG));
             xG =0;
 

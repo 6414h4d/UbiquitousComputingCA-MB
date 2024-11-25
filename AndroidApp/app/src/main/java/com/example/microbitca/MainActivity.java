@@ -31,6 +31,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity implements BLEListener {
     public ListView list_view;
 
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         *
         */
 
-        String[] punchData = new String[500];
+        String[] punchData = new String[30];
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 
@@ -126,10 +128,13 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
-
+        int punchDataIndex =0;
         while ( xG >= 800 ) {
+
 //            xG = xG*10;
-            Log.i("MovementDetected:", String.valueOf(xG));
+//            punchData.push();
+            Log.i("MovementDetected:", Arrays.toString(punchData));
+            punchDataIndex++;
             xG =0;
 
         }

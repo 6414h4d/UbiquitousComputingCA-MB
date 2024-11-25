@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         }
 
         startService(new Intent(this, firebase_service.class));
+        TenPunchTest();
     }
 
     BLEService service;
@@ -140,7 +141,18 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     }
 
     public void TenPunchTest(){
+        /*
+        * Ten punch test - Loop through this 10 times adding the punch value to an array
+        * Push to array
+        * When finished, push to database
+        * */
+        int count = 10;
+        for(int i = 0; i < count; i++){
 
+            if (i == count){
+                Toast.makeText(this, i+" "+count, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 

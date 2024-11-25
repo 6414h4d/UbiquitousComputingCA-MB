@@ -2,7 +2,6 @@ package com.example.microbitca;
 
 import static kotlinx.coroutines.DelayKt.delay;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -15,37 +14,19 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
-    public ListView list_view;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if(!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
-        startService(new Intent(this, firebase_service.class));
-//        TenPunchTest();
-    }
+    private ListView listView;
+    private TextView scoreView;
 
     BLEService service;
     boolean mBound = false;
@@ -57,6 +38,34 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             android.Manifest.permission.BLUETOOTH_ADVERTISE,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Set the activity layout
+        setContentView(R.layout.activity_main);
+
+        // Initialize UI elements
+        listView = findViewById(R.id.listView);
+        scoreView = findViewById(R.id.textView2);
+
+        // Set default score value
+        scoreView.setText("0");
+
+        // Populate the ListView with sample data
+        String[] testData = {"Test Item 1", "Test Item 2", "Test Item 3"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
+        listView.setAdapter(adapter);
+
+        // Check permissions
+        if (!hasPermissions(this, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+        }
+
+        // Start Firebase service
+        startService(new Intent(this, firebase_service.class));
+    }
 
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
@@ -72,27 +81,19 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     @Override
     protected void onStart() {
         super.onStart();
-        // Bind to LocalService.
+        // Bind to BLEService
         Intent intent = new Intent(this, BLEService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
-//    public void dataReceived(float xG, float yG, float zG, float pitch, float roll){
-//        Log.i("TAG", Thread.currentThread().getName());
-//        graphView.updateGraph(new float[]{xG,yG,zG},xGcb.isChecked(),yGcb.isChecked(),zGcb.isChecked(),mGcb.isChecked());
-//        pitchTV.setText("θ:"+(int)pitch);
-//        rollTV.setText("φ:"+(int)roll);
-//    }
-
-    /** Defines callbacks for service binding, passed to bindService(). */
-    private ServiceConnection connection = new ServiceConnection() {
+    private final ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder iBinder) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance.
+            // Service connection established
             BLEService.BLEBinder binder = (BLEService.BLEBinder) iBinder;
             service = binder.getService();
             service.startScan();
-            service.addBLEListener((BLEListener) MainActivity.this);
+            service.addBLEListener(MainActivity.this);
             mBound = true;
         }
 
@@ -102,68 +103,45 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         }
     };
 
-
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        /*
-        * Take recieved data and pass it to the punch array.
-        * This function should only be allowed to send data once every couple of seconds to stop the array from being filled too quickly
-        * A threshold value for what data will be selected is set to further help with weeding out false positives.
-        *
-        * An array of data is saved and the highest value be taken from it and moved to the array as this will be the maximum power of the punch.
-        *
-        * Empty the array after the highest value has been selected and moved to the punch array.
-        *
-        */
-
+        // Handle received data
         String[] punchData = new String[30];
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // create the notification channel
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,"NOTIFICATION_CHANNEL_NAME",NotificationManager.IMPORTANCE_HIGH);
-            // 'build' the notification
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Punch Notifications", NotificationManager.IMPORTANCE_HIGH);
             notificationChannel.enableVibration(true);
             notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
-        int punchDataIndex =0;
-        while ( xG >= 800 ) {
 
-//            xG = xG*10;
-//            punchData.push();
+        int punchDataIndex = 0;
+        while (xG >= 800) {
             Log.i("MovementDetected:", Arrays.toString(punchData));
             punchDataIndex++;
-            xG =0;
-
+            xG = 0;
         }
-        // Create the notification
+
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Punch Detected").setContentText("X Value"+xG)
-                .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true);
+                .setContentTitle("Punch Detected")
+                .setContentText("X Value: " + xG)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
 
-        // Display the notification
         mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
     }
 
-    public void TenPunchTest(){
-        /*
-        * Ten punch test - Loop through this 10 times adding the punch value to an array
-        * Push to array
-        * When finished, push to database
-        * */
+    public void TenPunchTest() {
         int count = 9;
-        int counter =0;
-        for(int i = 0; i <= count; i++){
+        int counter = 0;
+        for (int i = 0; i <= count; i++) {
             counter++;
-
-            if (i == count){
-                //Toast.makeText(this, "I = "+i+" Count = "+count+"Counter: "+counter, Toast.LENGTH_SHORT).show();
+            if (i == count) {
+                Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
             }
         }
     }
-
-
 }

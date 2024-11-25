@@ -210,7 +210,7 @@ public class BLEService extends Service {
             float xG = (float)byteArray2short(xG_bytes);
             float yG = (float)byteArray2short(yG_bytes);
             float zG = (float)byteArray2short(zG_bytes);
-            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int)Math.sqrt(xG*xG+yG*yG+zG*zG)+".0");
+//            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int)Math.sqrt(xG*xG+yG*yG+zG*zG)+".0");
             //calculate the refresh rate (Hz)
             if (numMeasurements == 0) {
                 t0 = System.currentTimeMillis();
@@ -218,7 +218,7 @@ public class BLEService extends Service {
             }
             else if (numMeasurements == 100) {
                 t = System.currentTimeMillis();
-                float hz = 100.0f/(t-t0)*1000;
+                float hz = 100.0f/(t-t0)*100;
                 Log.i(TAG, "HZ: " + hz);
                 numMeasurements=0;
             }
@@ -241,7 +241,7 @@ public class BLEService extends Service {
             //convert radians into degrees
             pitch = pitch * (180.0 / Math.PI);
             roll = -1 * roll * (180.0 / Math.PI);
-            Log.i(TAG, "pitch : roll: " + (int)pitch + " : " + (int)roll);
+//            Log.i(TAG, "pitch : roll: " + (int)pitch + " : " + (int)roll);
             for (BLEListener listener : listeners)
             {
                 listener.dataReceived(accel_output[0],accel_output[1],accel_output[2],(float)pitch,(float)roll);

@@ -17,16 +17,20 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
     private TextView scoreView;
+    private TextView textView2;
 
     BLEService service;
     boolean mBound = false;
@@ -106,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         // Handle received data
-        String[] punchData = new String[30];
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 
@@ -117,12 +120,20 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
 
-        int punchDataIndex = 0;
+        List<String> punchData = new ArrayList<>();
         while (xG >= 800) {
-            Log.i("MovementDetected:", Arrays.toString(punchData));
-            punchDataIndex++;
+            float xGVal = (xG*10)%10;
+            this.textView2 = (TextView)findViewById(R.id.textView2);
+            textView2.setText(String.valueOf(xGVal));
+            punchData.add(String.valueOf(xG));
+            Log.i("MovementDetected:", punchData.toString());
             xG = 0;
+
+
         }
+//        String[] simpleArray = new String[ punchData.size() ];
+////        punchData.toArray( simpleArray );
+////        Log.i("MovementFinished", punchData.toString());
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_background)

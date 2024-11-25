@@ -50,7 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
         // Handle back to login button click
         backToLoginButton.setOnClickListener(v -> {
             // Navigate to MainActivity (Login Activity)
-            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
             finish(); // Close the RegisterActivity so the user cannot navigate back to it
         });
@@ -111,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
 
                     // Redirect to Login Activity (MainActivity)
-                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                     startActivity(intent);
                     finish(); // Close the current activity so that user can't navigate back to the register page
                 })

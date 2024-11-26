@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Punch Notifications", NotificationManager.IMPORTANCE_HIGH);
             notificationChannel.enableVibration(true);
-            notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 300, 200, 100});
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
 

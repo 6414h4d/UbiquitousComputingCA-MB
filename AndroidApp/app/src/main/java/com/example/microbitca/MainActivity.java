@@ -109,7 +109,15 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        // Handle received data
+        /*
+        * Handle data received from the Microbit.
+        * Set the value threshold for data recieved from the Microbit. While the threshold
+        * has been exceeded, add data to a 'punch power' array. Once the threshold is no
+        * longer being exceeded, select the Highest value and send this to the TenPunchTest
+        * method to be send to the database once Ten punches have been recorded. 
+        * */
+
+
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
 

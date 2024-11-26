@@ -114,19 +114,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         * Set the value threshold for data recieved from the Microbit. While the threshold
         * has been exceeded, add data to a 'punch power' array. Once the threshold is no
         * longer being exceeded, select the Highest value and send this to the TenPunchTest
-        * method to be send to the database once Ten punches have been recorded. 
+        * method to be send to the database once Ten punches have been recorded.
         * */
-
-
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String NOTIFICATION_CHANNEL_ID = "10001";
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Punch Notifications", NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.enableVibration(true);
-            notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 300, 200, 100});
-            mNotificationManager.createNotificationChannel(notificationChannel);
-        }
 
         List<String> punchData = new ArrayList<>();
         while (xG >= 800) {
@@ -142,20 +131,15 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         }
 //        String[] simpleArray = new String[ punchData.size() ];
-////        punchData.toArray( simpleArray );
-////        Log.i("MovementFinished", punchData.toString());
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Punch Detected")
-                .setContentText("X Value: " + xG)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
+//        punchData.toArray( simpleArray );
+//        Log.i("MovementFinished", punchData.toString());
+        sendNotification("Punch Detected","X Value: ");
     }
 
+
     public void TenPunchTest() {
+        /*
+        * */
         int count = 9;
         int counter = 0;
         for (int i = 0; i <= count; i++) {
@@ -163,6 +147,27 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             if (i == count) {
                 Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
             }
+        }
+    }
+
+    public void sendNotification(String titleText, String contentText) {
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String NOTIFICATION_CHANNEL_ID = "10001";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Punch Notifications", NotificationManager.IMPORTANCE_HIGH);
+            notificationChannel.enableVibration(true);
+            notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 300, 200, 100});
+            mNotificationManager.createNotificationChannel(notificationChannel);
+
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setContentTitle(titleText)
+                    .setContentText(contentText)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true);
+
+            mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
         }
     }
 }

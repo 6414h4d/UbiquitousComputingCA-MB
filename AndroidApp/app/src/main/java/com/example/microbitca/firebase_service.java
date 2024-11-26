@@ -30,14 +30,12 @@ public class firebase_service extends Service {
     public void onDestroy(){}
 
     public firebase_service() {
-//        PunchPowerModel punch = new PunchPowerModel("58", "12343");
+        // PunchPowerModel punch = new PunchPowerModel("58", "12343");
 
         db = FirebaseDatabase.getInstance();
-//        dbRef = db.getReference("TopScores");
+        // dbRef = db.getReference("TopScores");
 
         FirebaseDatabase.getInstance();
-
-
 //        dbRef.addValueEventListener(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(DataSnapshot dataSnapshot) {
@@ -61,6 +59,11 @@ public class firebase_service extends Service {
 //            public void onCancelled(@NonNull DatabaseError error) {
 //            }
 //        });
+    }
+    public void onPunchTestComplete(String userId, String[] punchData ){
+        /*
+        *
+        * */
     }
     
 

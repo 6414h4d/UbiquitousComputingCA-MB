@@ -23,6 +23,7 @@ public class firebase_service extends Service {
     DatabaseReference dbRef;
 
     public void onCreate(){
+        db = FirebaseDatabase.getInstance();
         Toast.makeText(this, "Firebase Service started", Toast.LENGTH_SHORT).show();
     }
 
@@ -32,7 +33,6 @@ public class firebase_service extends Service {
     public firebase_service() {
         // PunchPowerModel punch = new PunchPowerModel("58", "12343");
 
-        db = FirebaseDatabase.getInstance();
         // dbRef = db.getReference("TopScores");
 
         FirebaseDatabase.getInstance();

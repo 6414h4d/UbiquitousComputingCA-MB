@@ -23,7 +23,7 @@ public class firebase_service extends Service {
     DatabaseReference dbRef;
 
     public void onCreate(){
-//        Toast.makeText(this, "Firebase Service started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Firebase Service started", Toast.LENGTH_SHORT).show();
     }
 
     public void onStart(Intent intent, int startid){}

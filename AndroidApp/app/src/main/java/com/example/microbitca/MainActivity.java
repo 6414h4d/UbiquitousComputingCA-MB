@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             service.addBLEListener(MainActivity.this);
             mBound = true;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
@@ -110,11 +109,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
-        * Handle data received from the Microbit.
-        * Set the value threshold for data recieved from the Microbit. While the threshold
-        * has been exceeded, add data to a 'punch power' array. Once the threshold is no
-        * longer being exceeded, select the Highest value and send this to the TenPunchTest
-        * method to be send to the database once Ten punches have been recorded.
+        * Handle data received from the Microbit.  Set the value threshold for data
+        * recieved from the Microbit. While the threshold has been exceeded, add
+        * data to a 'punch power' array. Once the threshold is no longer being exceeded,
+        * select the Highest value and send this to the TenPunchTest method to be
+        * send to the database once Ten punches have been recorded.
         * */
 
         List<String> punchData = new ArrayList<>();
@@ -126,19 +125,18 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             punchData.add(String.valueOf(xG));
 
             Log.i("MovementDetected:", punchData.toString());
+            sendNotification("Punch Detected","X Value: ");
             xG = 0;
-
 
         }
 //        String[] simpleArray = new String[ punchData.size() ];
 //        punchData.toArray( simpleArray );
 //        Log.i("MovementFinished", punchData.toString());
-        sendNotification("Punch Detected","X Value: ");
     }
-
 
     public void TenPunchTest() {
         /*
+        *
         * */
         int count = 9;
         int counter = 0;

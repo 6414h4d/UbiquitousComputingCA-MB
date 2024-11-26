@@ -122,10 +122,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         List<String> punchData = new ArrayList<>();
         while (xG >= 800) {
-            float xGVal = (xG*10)%10;
+            String xGVal = String.valueOf((xG*10)%10);
+
             this.textView2 = (TextView)findViewById(R.id.textView2);
-            textView2.setText(String.valueOf(xGVal));
+            textView2.setText(xGVal);
             punchData.add(String.valueOf(xG));
+
             Log.i("MovementDetected:", punchData.toString());
             xG = 0;
 

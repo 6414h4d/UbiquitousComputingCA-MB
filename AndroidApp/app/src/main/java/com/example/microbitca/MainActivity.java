@@ -25,6 +25,7 @@ import androidx.core.app.NotificationCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
         * Handle data received from the Microbit.  Set the value threshold for data
-        * recieved from the Microbit. While the threshold has been exceeded, add
+        * received from the Microbit. While the threshold has been exceeded, add
         * data to a 'punch power' array. Once the threshold is no longer being exceeded,
         * select the Highest value and send this to the TenPunchTest method to be
         * send to the database once Ten punches have been recorded.
@@ -134,18 +135,30 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 //        Log.i("MovementFinished", punchData.toString());
     }
 
-    public void TenPunchTest() {
+    public void TenPunchTest(View view) {
         /*
-        *
+        * Trigger when the Start Test button is pressed. When the 10 punches
+        * have been recorded trigger the onPunchTestComplete method in
+        * firebase_service.
         * */
+        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
+
         int count = 9;
         int counter = 0;
+
         for (int i = 0; i <= count; i++) {
             counter++;
             if (i == count) {
                 Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
+
             }
         }
+        this.textView2 = findViewById(R.id.textView2);
+        textView2.setText("50");
+
+        TenPunchTest.put("asdf", "50");
+        Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
+
     }
 
     public void sendNotification(String titleText, String contentText) {

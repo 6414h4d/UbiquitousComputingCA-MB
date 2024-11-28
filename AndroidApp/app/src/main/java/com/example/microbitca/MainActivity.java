@@ -23,8 +23,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -102,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             service.addBLEListener(MainActivity.this);
             mBound = true;
         }
+
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
@@ -111,40 +114,44 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
-        * Handle data received from the Microbit.  Set the value threshold for data
-        * received from the Microbit. While the threshold has been exceeded, add
-        * data to a 'punch power' array. Once the threshold is no longer being exceeded,
-        * select the Highest value and send this to the TenPunchTest method to be
-        * send to the database once Ten punches have been recorded.
-        * */
+         * Handle data received from the Microbit. Calculate the speed from the accelerometer data.
+         * Once the speed is calculated, it will be uploaded to Firebase.
+         * */
+        float speed = (float) Math.sqrt(xG * xG + yG * yG + zG * zG);  // Calculate the magnitude of acceleration
 
-        ArrayList<String> punchData = new ArrayList<>();
-//        int[] punchData = new [30];
+        // Update the UI with the calculated speed
+        this.textView2 = findViewById(R.id.textView2);
+        textView2.setText(String.format("%.2f", speed));
 
-        while (xG >= 800) {
-            String xGVal = String.valueOf(xG);
+        // Upload speed data to Firebase
+        uploadSpeedToFirebase(speed);
 
-            this.textView2 = (TextView)findViewById(R.id.textView2);
-            textView2.setText(xGVal);
+        // Optional: Add more processing or actions based on the speed value
+        Log.i("SpeedData", "Speed: " + speed);
+        sendNotification("Speed Detected", "Current Speed: " + speed);
+    }
 
-            punchData.add(String.valueOf(xG));
+    private void uploadSpeedToFirebase(float speed) {
+        // Get a reference to the Firebase Realtime Database
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("speeds");
 
-            Log.i("MovementDetected:", punchData.toString());
-            sendNotification("Punch Detected","X Value: ");
-            xG = 0;
+        // Create a unique ID for the new speed entry
+        String speedId = database.push().getKey();
 
+        // If the ID is not null, save the speed value to the database
+        if (speedId != null) {
+            database.child(speedId).setValue(speed)
+                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Speed uploaded successfully"))
+                    .addOnFailureListener(e -> Log.e("Firebase", "Error uploading speed", e));
         }
-//        String[] simpleArray = new String[ punchData.size() ];
-//        punchData.toArray( simpleArray );
-//        Log.i("MovementFinished", punchData.toString());
     }
 
     public void TenPunchTest(View view) {
         /*
-        * Trigger when the Start Test button is pressed. When the 10 punches
-        * have been recorded trigger the onPunchTestComplete method in
-        * firebase_service.
-        * */
+         * Trigger when the Start Test button is pressed. When the 10 punches
+         * have been recorded trigger the onPunchTestComplete method in
+         * firebase_service.
+         * */
         HashMap<String, String> TenPunchTest = new HashMap<String, String>();
 
         int count = 9;
@@ -154,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             counter++;
             if (i == count) {
                 Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
-
             }
         }
         this.textView2 = findViewById(R.id.textView2);
@@ -162,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         TenPunchTest.put("asdf", "50");
         Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
-
     }
 
     public void sendNotification(String titleText, String contentText) {

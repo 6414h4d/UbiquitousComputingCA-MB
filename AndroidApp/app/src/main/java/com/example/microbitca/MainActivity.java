@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     private TextView textView2;
 
     BLEService service;
+    //HI
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;

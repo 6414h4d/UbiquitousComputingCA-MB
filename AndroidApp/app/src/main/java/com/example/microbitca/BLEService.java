@@ -49,9 +49,8 @@ public class BLEService extends Service {
     final UUID ACC_DATA_CHARACTERISTIC_UUID = UUID.fromString("E95DCA4B-251D-470A-A062-FA1922DFA9A8");
     final UUID ACC_PERIOD_CHARACTERISTIC_UUID = UUID.fromString("E95DFB24-251D-470A-A062-FA1922DFA9A8");
     final String TAG = "MicroBitConnectService";
-    //final String uBit_name = "BBC micro:bit [vepiv]";
-    //final String uBit_name = "BBC micro:bit [givez]";
-    final String uBit_name = "BBC micro:bit";
+    final String uBit_name = "BBC micro:bit [vepiv]";
+//    final String uBit_name = "BBC micro:bit";
 
     //list of listeners for data received events
     private List<BLEListener> listeners = new ArrayList<BLEListener>();
@@ -127,12 +126,16 @@ public class BLEService extends Service {
             if (result.getDevice().getName() != null){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                     Log.i(TAG,result.getDevice().getAlias());
-                else
-                    Log.i(TAG,result.getDevice().getName());
+                else {
+                    Log.i(TAG, result.getDevice().getName());
+                    Log.i("BluetoothConnectionFailed", "Failed to connect to Microbit");
+                    Toast.makeText(BLEService.this, "Failed to connect to Microbit", Toast.LENGTH_SHORT).show();
+                }
                 if (result.getDevice().getName().equals(uBit_name)) {
                     // When find your device, connect.
                     connectDevice(result.getDevice());
                     bluetoothLeScanner.stopScan(bluetoothScanCallback); // stop scan
+                    Log.i("BluetoothConnectionSuccessful","Successfully connected to Microbit");
                     Toast.makeText(BLEService.this, "Connected to Microbit", Toast.LENGTH_SHORT).show();
                 }
             }

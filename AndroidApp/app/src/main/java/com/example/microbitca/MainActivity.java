@@ -1,7 +1,5 @@
 package com.example.microbitca;
 
-import static kotlinx.coroutines.DelayKt.delay;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -17,21 +15,21 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
     private TextView scoreView;
-    private TextView textView2;
 
     BLEService service;
     boolean mBound = false;
@@ -43,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             android.Manifest.permission.BLUETOOTH_ADVERTISE,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
     };
+
+    // Firebase database reference
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +59,18 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Set default score value
         scoreView.setText("0");
 
+        // Firebase setup
+        database = FirebaseDatabase.getInstance().getReference("scores");
+
         // Populate the ListView with sample data
-        String[] testData = {"Test Item 1", "Test Item 2", "Test Item 3"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
-        listView.setAdapter(adapter);
+        updateHighScores();
 
         // Check permissions
         if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
 
-        // Start Firebase service
+        // Start Firebase service (if needed)
         startService(new Intent(this, firebase_service.class));
     }
 
@@ -101,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             service.addBLEListener(MainActivity.this);
             mBound = true;
         }
+
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
@@ -109,56 +112,43 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        /*
-        * Handle data received from the Microbit.  Set the value threshold for data
-        * received from the Microbit. While the threshold has been exceeded, add
-        * data to a 'punch power' array. Once the threshold is no longer being exceeded,
-        * select the Highest value and send this to the TenPunchTest method to be
-        * send to the database once Ten punches have been recorded.
-        * */
+        // Handle data received from the Microbit
+        if (xG >= 800) {
+            int score = (int) (xG * 10); // Example scoring logic
+            runOnUiThread(() -> scoreView.setText(String.valueOf(score)));
 
-        List<String> punchData = new ArrayList<>();
-        while (xG >= 800) {
-            String xGVal = String.valueOf((xG*10)%10);
-
-            this.textView2 = (TextView)findViewById(R.id.textView2);
-            textView2.setText(xGVal);
-            punchData.add(String.valueOf(xG));
-
-            Log.i("MovementDetected:", punchData.toString());
-            sendNotification("Punch Detected","X Value: ");
-            xG = 0;
-
-        }
-//        String[] simpleArray = new String[ punchData.size() ];
-//        punchData.toArray( simpleArray );
-//        Log.i("MovementFinished", punchData.toString());
-    }
-
-    public void TenPunchTest(View view) {
-        /*
-        * Trigger when the Start Test button is pressed. When the 10 punches
-        * have been recorded trigger the onPunchTestComplete method in
-        * firebase_service.
-        * */
-        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
-
-        int count = 9;
-        int counter = 0;
-
-        for (int i = 0; i <= count; i++) {
-            counter++;
-            if (i == count) {
-                Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
-
+            // Save to Firebase
+            String scoreId = database.push().getKey();
+            if (scoreId != null) {
+                database.child(scoreId).setValue(score).addOnSuccessListener(aVoid -> {
+                    Log.i("Firebase", "Score saved: " + score);
+                    updateHighScores();
+                }).addOnFailureListener(e -> Log.e("Firebase", "Failed to save score", e));
             }
         }
-        this.textView2 = findViewById(R.id.textView2);
-        textView2.setText("50");
+    }
 
-        TenPunchTest.put("asdf", "50");
-        Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
+    private void updateHighScores() {
+        // Retrieve highest scores from Firebase and update the ListView
+        database.orderByValue().limitToLast(10).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                List<String> highScores = new ArrayList<>();
+                for (DataSnapshot scoreSnapshot : task.getResult().getChildren()) {
+                    highScores.add(String.valueOf(scoreSnapshot.getValue(Integer.class)));
+                }
 
+                // Sort scores in descending order
+                highScores.sort((a, b) -> Integer.compare(Integer.parseInt(b), Integer.parseInt(a)));
+
+                // Update the ListView
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScores);
+                listView.setAdapter(adapter);
+
+                Log.i("Firebase", "High scores updated: " + highScores);
+            } else {
+                Log.e("Firebase", "Failed to retrieve scores", task.getException());
+            }
+        });
     }
 
     public void sendNotification(String titleText, String contentText) {

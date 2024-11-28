@@ -49,8 +49,7 @@ public class BLEService extends Service {
     final UUID ACC_DATA_CHARACTERISTIC_UUID = UUID.fromString("E95DCA4B-251D-470A-A062-FA1922DFA9A8");
     final UUID ACC_PERIOD_CHARACTERISTIC_UUID = UUID.fromString("E95DFB24-251D-470A-A062-FA1922DFA9A8");
     final String TAG = "MicroBitConnectService";
-    //final String uBit_name = "BBC micro:bit [vepiv]";
-    //final String uBit_name = "BBC micro:bit [givez]";
+//    final String uBit_name = "BBC micro:bit [vepiv]";
     final String uBit_name = "BBC micro:bit";
 
     //list of listeners for data received events
@@ -256,16 +255,15 @@ public class BLEService extends Service {
     }
 
     //convert byte array[2 bytes] to short
-    private short byteArray2short(byte [] bytes)
-    {
+    private short byteArray2short(byte [] bytes) {
         ByteBuffer bb = ByteBuffer.allocate(2);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         bb.put(bytes[0]);
         bb.put(bytes[1]);
         return bb.getShort(0);
     }
-    public void changePeriod(short period)
-    {
+
+    public void changePeriod(short period) {
         if (gattClient != null) {
             BluetoothGattCharacteristic ACC_PERIOD_characteristicID = gattClient.getService(ACC_SERVICE_SERVICE_UUID).getCharacteristic(ACC_PERIOD_CHARACTERISTIC_UUID);
             //boolean result = gatt.readCharacteristic(ACC_PERIOD_characteristicID);

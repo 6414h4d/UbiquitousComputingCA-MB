@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayList<String> punchData = new ArrayList<>();
 //        int[] punchData = new [30];
 
-        while (xG >= 800) {
+        while (xG >= 900) {
             String xGVal = String.valueOf(xG);
 
             this.textView2 = (TextView)findViewById(R.id.textView2);
@@ -128,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
             punchData.add(String.valueOf(xG));
 
-            Log.i("MovementDetected:", punchData.toString());
-            sendNotification("Punch Detected","X Value: ");
+            Log.i("MovementDetected:", xGVal);
+            sendNotification("Punch Detected","X Value: "+xGVal);
             xG = 0;
 
         }

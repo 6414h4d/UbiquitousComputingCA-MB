@@ -117,12 +117,15 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         * send to the database once Ten punches have been recorded.
         * */
 
-        List<String> punchData = new ArrayList<>();
+        ArrayList<String> punchData = new ArrayList<>();
+//        int[] punchData = new [30];
+
         while (xG >= 800) {
-            String xGVal = String.valueOf((xG*10)%10);
+            String xGVal = String.valueOf(xG);
 
             this.textView2 = (TextView)findViewById(R.id.textView2);
             textView2.setText(xGVal);
+
             punchData.add(String.valueOf(xG));
 
             Log.i("MovementDetected:", punchData.toString());

@@ -1,7 +1,5 @@
 package com.example.microbitca;
 
-import static kotlinx.coroutines.DelayKt.delay;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -15,6 +13,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,9 +25,7 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
@@ -36,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     private TextView textView2;
 
     BLEService service;
-    //HI
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;
@@ -57,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Initialize UI elements
         listView = findViewById(R.id.listView);
         scoreView = findViewById(R.id.textView2);
+        Button startButton = findViewById(R.id.button);
 
         // Set default score value
         scoreView.setText("0");
@@ -66,6 +63,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
         listView.setAdapter(adapter);
 
+        // Initialize the Start Button and set up the click listener
+        startButton.setOnClickListener(v -> {
+            // Send "BEGIN" command to the Microbit when the start button is pressed
+            sendBeginCommand();
+        });
+
         // Check permissions
         if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
@@ -73,6 +76,13 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         // Start Firebase service
         startService(new Intent(this, firebase_service.class));
+    }
+
+    private void sendBeginCommand() {
+        if (service != null) {
+            // Send "BEGIN" command to Microbit via Bluetooth UART
+            service.sendData("BEGIN");
+        }
     }
 
     public static boolean hasPermissions(Context context, String... permissions) {
@@ -113,14 +123,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
     @Override
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        /*
-         * Handle data received from the Microbit. Calculate the speed from the accelerometer data.
-         * Once the speed is calculated, it will be uploaded to Firebase.
-         * */
+        // Handle received data here
         float speed = (float) Math.sqrt(xG * xG + yG * yG + zG * zG);  // Calculate the magnitude of acceleration
 
         // Update the UI with the calculated speed
-        this.textView2 = findViewById(R.id.textView2);
+        textView2 = findViewById(R.id.textView2);
         textView2.setText(String.format("%.2f", speed));
 
         // Upload speed data to Firebase
@@ -146,30 +153,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         }
     }
 
-    public void TenPunchTest(View view) {
-        /*
-         * Trigger when the Start Test button is pressed. When the 10 punches
-         * have been recorded trigger the onPunchTestComplete method in
-         * firebase_service.
-         * */
-        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
-
-        int count = 9;
-        int counter = 0;
-
-        for (int i = 0; i <= count; i++) {
-            counter++;
-            if (i == count) {
-                Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
-            }
-        }
-        this.textView2 = findViewById(R.id.textView2);
-        textView2.setText("50");
-
-        TenPunchTest.put("asdf", "50");
-        Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
-    }
-
     public void sendNotification(String titleText, String contentText) {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String NOTIFICATION_CHANNEL_ID = "10001";
@@ -190,4 +173,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             mNotificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
         }
     }
+
+    // Other existing methods...
 }

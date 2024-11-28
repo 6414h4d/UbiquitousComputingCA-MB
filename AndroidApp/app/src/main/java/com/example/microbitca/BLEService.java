@@ -20,9 +20,11 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.util.Log;
 import android.widget.Toast;
+import com.siliconlabs.bledemo.BluetoothSerial;
 
 import androidx.core.app.ActivityCompat;
 
+import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -49,12 +51,12 @@ public class BLEService extends Service {
     final UUID ACC_DATA_CHARACTERISTIC_UUID = UUID.fromString("E95DCA4B-251D-470A-A062-FA1922DFA9A8");
     final UUID ACC_PERIOD_CHARACTERISTIC_UUID = UUID.fromString("E95DFB24-251D-470A-A062-FA1922DFA9A8");
     final String TAG = "MicroBitConnectService";
-    //final String uBit_name = "BBC micro:bit [vepiv]";
-    //final String uBit_name = "BBC micro:bit [givez]";
     final String uBit_name = "BBC micro:bit";
 
     //list of listeners for data received events
     private List<BLEListener> listeners = new ArrayList<BLEListener>();
+
+    BluetoothSerial bluetoothSerial;
 
     public BLEService() {
         bleBinder = new BLEBinder();
@@ -64,6 +66,14 @@ public class BLEService extends Service {
 
     public void addBLEListener(BLEListener listener) {
         listeners.add(listener);
+    }
+
+    public void sendData(String data) {
+        if (bluetoothSerial != null && bluetoothSerial.isConnected()) {
+            bluetoothSerial.write(data.getBytes());
+        } else {
+            Log.e("Bluetooth", "Bluetooth not connected");
+        }
     }
 
     /**
@@ -77,16 +87,16 @@ public class BLEService extends Service {
         }
     }
 
-
     @Override
     public IBinder onBind(Intent intent) {
         return bleBinder;
     }
 
     @Override
-    public int onStartCommand(Intent intent,
-                              int flags,
-                              int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Initialize BluetoothSerial with application context
+        bluetoothSerial = new BluetoothSerial(getApplicationContext());
+        startScan();  // Begin scanning for BLE devices
         return START_STICKY;
     }
 
@@ -107,13 +117,8 @@ public class BLEService extends Service {
         }
         GattClientCallback gattClientCallback = new GattClientCallback();
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            // Request Bluetooth permission
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.BLUETOOTH_CONNECT}, 1);
             return;
         }
         gattClient = device.connectGatt(this, false, gattClientCallback);
@@ -123,12 +128,12 @@ public class BLEService extends Service {
     private class BluetoothScanCallback extends ScanCallback {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            Log.i(TAG, "onScanResult"+result.getDevice().getName());
-            if (result.getDevice().getName() != null){
+            Log.i(TAG, "onScanResult: " + result.getDevice().getName());
+            if (result.getDevice().getName() != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                    Log.i(TAG,result.getDevice().getAlias());
+                    Log.i(TAG, result.getDevice().getAlias());
                 else
-                    Log.i(TAG,result.getDevice().getName());
+                    Log.i(TAG, result.getDevice().getName());
                 if (result.getDevice().getName().equals(uBit_name)) {
                     // When find your device, connect.
                     connectDevice(result.getDevice());
@@ -176,128 +181,85 @@ public class BLEService extends Service {
             BluetoothGattService service = gatt.getService(ACC_SERVICE_SERVICE_UUID);
             List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
             //List and display in log the characteristics of this service
-            for(BluetoothGattCharacteristic characteristic : characteristics)
-            {
-                Log.i(TAG,characteristic.getUuid().toString());
+            for (BluetoothGattCharacteristic characteristic : characteristics) {
+                Log.i(TAG, characteristic.getUuid().toString());
             }
 
             // Reference your UUIDs
             BluetoothGattCharacteristic ACC_DATA_characteristicID = gatt.getService(ACC_SERVICE_SERVICE_UUID).getCharacteristic(ACC_DATA_CHARACTERISTIC_UUID);
             gatt.setCharacteristicNotification(ACC_DATA_characteristicID, true);
 
-
-            //activate any descriptors for the characteristics
+            // Activate any descriptors for the characteristics
             List<BluetoothGattDescriptor> ACC_DATA_descriptors = ACC_DATA_characteristicID.getDescriptors();
-            for (BluetoothGattDescriptor descriptor : ACC_DATA_descriptors)
-            {
-                Log.i(TAG,descriptor.getUuid().toString());
+            for (BluetoothGattDescriptor descriptor : ACC_DATA_descriptors) {
+                Log.i(TAG, descriptor.getUuid().toString());
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 gatt.writeDescriptor(descriptor);
             }
-
         }
-        //this is the callback that receives the accelerometer data
+
+        // This is the callback that receives the accelerometer data
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            byte [] bytes = characteristic.getValue();
+            byte[] bytes = characteristic.getValue();
             byte[] xG_bytes = new byte[2];
             byte[] yG_bytes = new byte[2];
             byte[] zG_bytes = new byte[2];
             System.arraycopy(bytes, 0, xG_bytes, 0, 2);
             System.arraycopy(bytes, 2, yG_bytes, 0, 2);
             System.arraycopy(bytes, 4, zG_bytes, 0, 2);
-            float xG = (float)byteArray2short(xG_bytes);
-            float yG = (float)byteArray2short(yG_bytes);
-            float zG = (float)byteArray2short(zG_bytes);
-            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int)Math.sqrt(xG*xG+yG*yG+zG*zG)+".0");
-            //calculate the refresh rate (Hz)
+            float xG = (float) byteArray2short(xG_bytes);
+            float yG = (float) byteArray2short(yG_bytes);
+            float zG = (float) byteArray2short(zG_bytes);
+            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int) Math.sqrt(xG * xG + yG * yG + zG * zG) + ".0");
+
+            // Calculate the refresh rate (Hz)
             if (numMeasurements == 0) {
                 t0 = System.currentTimeMillis();
                 numMeasurements++;
-            }
-            else if (numMeasurements == 100) {
+            } else if (numMeasurements == 100) {
                 t = System.currentTimeMillis();
-                float hz = 100.0f/(t-t0)*100;
+                float hz = 100.0f / (t - t0) * 100;
                 Log.i(TAG, "HZ: " + hz);
-                numMeasurements=0;
-            }
-            else
+                numMeasurements = 0;
+            } else {
                 numMeasurements++;
-
-            accel_input[0] = xG;accel_input[1]=yG;accel_input[2]=zG;
-            if (filter)
-            {
-                accel_output = lowPass(accel_input,accel_output);
             }
-            else
-            {
+
+            accel_input[0] = xG;
+            accel_input[1] = yG;
+            accel_input[2] = zG;
+            if (filter) {
+                accel_output = lowPass(accel_input, accel_output);
+            } else {
                 accel_output[0] = accel_input[0];
                 accel_output[1] = accel_input[1];
                 accel_output[2] = accel_input[2];
             }
-            double pitch = Math.atan((accel_output[0]/1024.0f) / Math.sqrt(Math.pow((accel_output[1]/1024.0f), 2) + Math.pow((accel_output[2]/1024.0f), 2)));
-            double roll = Math.atan((accel_output[1]/1024.0f) / Math.sqrt(Math.pow((accel_output[0]/1024.0f), 2) + Math.pow((accel_output[2]/1024.0f), 2)));
-            //convert radians into degrees
-            pitch = pitch * (180.0 / Math.PI);
-            roll = -1 * roll * (180.0 / Math.PI);
-            Log.i(TAG, "pitch : roll: " + (int)pitch + " : " + (int)roll);
-            for (BLEListener listener : listeners)
-            {
-                try {
-                    listener.dataReceived(accel_output[0],accel_output[1],accel_output[2],(float)pitch,(float)roll);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            //Log.i("TAG", Thread.currentThread().getName());
-        }
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-            Log.i(TAG, "onCharacteristicRead: " + byteArray2short(characteristic.getValue()));
         }
     }
 
-    //convert byte array[2 bytes] to short
-    private short byteArray2short(byte [] bytes)
-    {
-        ByteBuffer bb = ByteBuffer.allocate(2);
-        bb.order(ByteOrder.LITTLE_ENDIAN);
-        bb.put(bytes[0]);
-        bb.put(bytes[1]);
-        return bb.getShort(0);
-    }
-    public void changePeriod(short period)
-    {
-        if (gattClient != null) {
-            BluetoothGattCharacteristic ACC_PERIOD_characteristicID = gattClient.getService(ACC_SERVICE_SERVICE_UUID).getCharacteristic(ACC_PERIOD_CHARACTERISTIC_UUID);
-            //boolean result = gatt.readCharacteristic(ACC_PERIOD_characteristicID);
-            //convert short to byte array
-            byte[] value = new byte[2];
-            value[0] = (byte) (period & 0xff);
-            value[1] = (byte) ((period >> 8) & 0xff);
-            ACC_PERIOD_characteristicID.setValue(value);
-            gattClient.writeCharacteristic(ACC_PERIOD_characteristicID);
-        }
+    // Convert byte array to short
+    private short byteArray2short(byte[] byteArray) {
+        return ByteBuffer.wrap(byteArray).order(ByteOrder.LITTLE_ENDIAN).getShort();
     }
 
-    /*
-     * @see http://en.wikipedia.org/wiki/Low-pass_filter#Algorithmic_implementation
-     * @see http://developer.android.com/reference/android/hardware/SensorEvent.html#values
-     */
-    public float[] lowPass( float[] input, float[] output ) {
-        float ALPHA = 0.15f;
-        for ( int i=0; i<input.length; i++ ) {
-            output[i] = output[i] + ALPHA * (input[i] - output[i]);
-        }
+    // Low pass filter for accelerometer data
+    private float[] lowPass(float[] input, float[] output) {
+        float alpha = 0.25f; // Adjust this value for more or less smoothing
+        output[0] = alpha * input[0] + (1 - alpha) * output[0];
+        output[1] = alpha * input[1] + (1 - alpha) * output[1];
+        output[2] = alpha * input[2] + (1 - alpha) * output[2];
         return output;
     }
 
-    public void setFilter(boolean filter)
-    {
-        this.filter = filter;
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Stop scanning when service is destroyed
+        if (bluetoothLeScanner != null) {
+            bluetoothLeScanner.stopScan(bluetoothScanCallback);
+        }
     }
-
 }
-

@@ -119,18 +119,25 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         ArrayList<String> punchData = new ArrayList<>();
 //        int[] punchData = new [30];
+        float currentScore =0;
+        float highScore = 0;
 
         while (xG >= 900) {
-            String xGVal = String.valueOf(xG);
+            currentScore = xG;
+            if(currentScore > highScore ) {
 
-            this.textView2 = (TextView)findViewById(R.id.textView2);
-            textView2.setText(xGVal);
+                String xGVal = String.valueOf(highScore);
 
-            punchData.add(String.valueOf(xG));
+                this.textView2 = (TextView) findViewById(R.id.textView2);
+                textView2.setText(xGVal);
 
-            Log.i("MovementDetected:", xGVal);
-            sendNotification("Punch Detected","X Value: "+xGVal);
-            xG = 0;
+                punchData.add(String.valueOf(xG));
+
+                Log.i("MovementDetected:", xGVal);
+                sendNotification("Punch Detected", "X Value: " + xGVal);
+                xG = 0;
+                highScore = currentScore;
+            }
 
         }
 //        String[] simpleArray = new String[ punchData.size() ];

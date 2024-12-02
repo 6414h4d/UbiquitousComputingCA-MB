@@ -19,6 +19,12 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
     };
 
+    FirebaseDatabase db = FirebaseDatabase.getInstance();
+    DatabaseReference dbRef = db.getReference();
 
     ArrayList<String> testData = new ArrayList<>();
     ArrayList<String> highScoreArray = new ArrayList<String>();
@@ -125,9 +133,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         if (xG >= 1200) {
             if(xG > highScore ) {
                 highScore = xG;
-
                 Log.i("testDatahighScore",String.valueOf(highScore));
-//                String xGVal = String.valueOf(highScore);
 
                 this.textView2 = (TextView) findViewById(R.id.textView2);
 
@@ -136,8 +142,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
                 highScoreForArr=highScore;
                 if (highScore <= highScoreForArr){
+//                    sendNotification("Punch Detected", "X Value: " + highScoreForArr);
                     textView2.setText(""+xG);
-                    sendNotification("Punch Detected", "X Value: " + highScoreForArr);
                     highScoreForArr=highScore;
                     testData.add(String.valueOf(highScoreForArr));
                     Log.i("testData",String.valueOf(testData));
@@ -146,17 +152,30 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
                     ArrayAdapter<Object> updateAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  listviewData);
 
-
                     listView.setAdapter(updateAdapter);
+                    saveScoreToFirebase(String.valueOf(highScore));
                 }
                 xG = 0;
             }
             return highScore;
         }
-
+//        saveScoreToFirebase(String.valueOf(highScore));
         highScore=0;
         return highScore;
     }
+
+    private void saveScoreToFirebase(String highScore) {
+        String key = dbRef.push().getKey();
+        Log.i("Firebase","key"+key);
+        if (key != null) {
+            dbRef.child(key).setValue(highScore)
+                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Score saved: " + highScore))
+                    .addOnFailureListener(e -> Log.e("Firebase", "Error saving score", e));
+        } else {
+            Log.e("Firebase", "Firebase key is null");
+        }
+    }
+
 
     public void PunchTest(View view) {
         /*

@@ -1,7 +1,5 @@
 package com.example.microbitca;
 
-import static kotlinx.coroutines.DelayKt.delay;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -17,16 +15,13 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
@@ -44,6 +39,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
     };
 
+
+    ArrayList<String> testData = new ArrayList<String>();
+    float highScore=0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         scoreView.setText("0");
 
         // Populate the ListView with sample data
-        String[] testData = {"Test Item 1", "Test Item 2", "Test Item 3"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
         listView.setAdapter(adapter);
 
@@ -108,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     };
 
     @Override
-    public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
+    public float dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
         * Handle data received from the Microbit.  Set the value threshold for data
         * received from the Microbit. While the threshold has been exceeded, add
@@ -118,14 +117,17 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         * */
 
         ArrayList<String> punchData = new ArrayList<>();
-//        int[] punchData = new [30];
-        float currentScore =0;
-        float highScore = 0;
+        ArrayList<String> tempPunchData = new ArrayList<String>();
 
-        while (xG >= 900) {
-            currentScore = xG;
-            if(currentScore > highScore ) {
+        float highScoreForArr=0;
+        float currentScore= 0;
 
+        if (xG >= 1200) {
+
+            if(xG > highScore ) {
+                highScore = xG;
+
+                Log.i("testDatahighScore",String.valueOf(highScore));
                 String xGVal = String.valueOf(highScore);
 
                 this.textView2 = (TextView) findViewById(R.id.textView2);
@@ -133,26 +135,39 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
                 punchData.add(String.valueOf(xG));
 
-                Log.i("MovementDetected:", xGVal);
-                sendNotification("Punch Detected", "X Value: " + xGVal);
-                xG = 0;
-                highScore = currentScore;
-            }
+                highScore = xG;
 
+
+                highScoreForArr=highScore;
+                xG = 0;
+                if (highScore <= highScoreForArr){
+                    sendNotification("Punch Detected", "X Value: " + highScoreForArr);
+                    highScoreForArr=highScore;
+                    testData.add(String.valueOf(highScoreForArr));
+                    Log.i("testData",String.valueOf(testData));
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
+                    listView.setAdapter(adapter);
+                    highScore=0;
+                }
+            }
+            return highScore;
         }
-//        String[] simpleArray = new String[ punchData.size() ];
-//        punchData.toArray( simpleArray );
-//        Log.i("MovementFinished", punchData.toString());
+        return highScore;
     }
 
-    public void TenPunchTest(View view) {
+    public void PunchTest(View view) {
         /*
         * Trigger when the Start Test button is pressed. When the 10 punches
         * have been recorded trigger the onPunchTestComplete method in
         * firebase_service.
         * */
-        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
 
+
+        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
+        ArrayList<Integer> values = new ArrayList<Integer>();
+
+//        Log.i("testDataPunchTest", highScore)
         int count = 9;
         int counter = 0;
 
@@ -160,14 +175,14 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             counter++;
             if (i == count) {
                 Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
-
+                this.textView2 = findViewById(R.id.textView2);
+                textView2.setText("0");
+                values.add(2);
+                TenPunchTest.put("asdf", String.valueOf(values));
+                Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
             }
         }
-        this.textView2 = findViewById(R.id.textView2);
-        textView2.setText("50");
 
-        TenPunchTest.put("asdf", "50");
-        Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
 
     }
 

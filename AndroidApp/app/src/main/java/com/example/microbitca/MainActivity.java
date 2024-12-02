@@ -40,9 +40,10 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     };
 
 
-    ArrayList<String> testData = new ArrayList<String>();
+    ArrayList<String> testData = new ArrayList<>();
+    ArrayList<String> highScoreArray = new ArrayList<String>();
     float highScore=0;
-
+    float highScoreForArr=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         scoreView.setText("0");
 
         // Populate the ListView with sample data
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  testData);
         listView.setAdapter(adapter);
 
         // Check permissions
@@ -119,40 +120,41 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayList<String> punchData = new ArrayList<>();
         ArrayList<String> tempPunchData = new ArrayList<String>();
 
-        float highScoreForArr=0;
         float currentScore= 0;
 
         if (xG >= 1200) {
-
             if(xG > highScore ) {
                 highScore = xG;
 
                 Log.i("testDatahighScore",String.valueOf(highScore));
-                String xGVal = String.valueOf(highScore);
+//                String xGVal = String.valueOf(highScore);
 
                 this.textView2 = (TextView) findViewById(R.id.textView2);
-                textView2.setText(xGVal);
 
                 punchData.add(String.valueOf(xG));
-
                 highScore = xG;
 
-
                 highScoreForArr=highScore;
-                xG = 0;
                 if (highScore <= highScoreForArr){
+                    textView2.setText(""+xG);
                     sendNotification("Punch Detected", "X Value: " + highScoreForArr);
                     highScoreForArr=highScore;
                     testData.add(String.valueOf(highScoreForArr));
                     Log.i("testData",String.valueOf(testData));
 
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
-                    listView.setAdapter(adapter);
-                    highScore=0;
+                    Object[] listviewData = new ArrayList[]{testData};
+
+                    ArrayAdapter<Object> updateAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  listviewData);
+
+
+                    listView.setAdapter(updateAdapter);
                 }
+                xG = 0;
             }
             return highScore;
         }
+
+        highScore=0;
         return highScore;
     }
 

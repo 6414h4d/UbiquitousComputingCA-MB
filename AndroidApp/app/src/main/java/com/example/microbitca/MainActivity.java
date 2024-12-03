@@ -170,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
+
+
                 // Save data to database
                 saveScoreToFirebase(String.valueOf(highScore));
             } else {

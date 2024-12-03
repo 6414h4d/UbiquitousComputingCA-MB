@@ -1,5 +1,6 @@
 package com.example.microbitca;
 
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -24,7 +25,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         // Set default score value
         scoreView.setText("0");
+
+//        Object topTen = populateListView();
+
 
         // Populate the ListView with sample data
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  testData);
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 tempPunchData.add(String.valueOf(highScore));
                 Log.i("testDataPunchData", String.valueOf(tempPunchData));
                 // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
+                tempPunchData.add(String.valueOf(highScore));
 
                 // clear the tempPunchData
 
@@ -162,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             highScoreForArr = highScore;
             xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
+                // select the highest value from the tempPunchArray and add it to the
                 // Save data to the database
                 saveScoreToFirebase(String.valueOf(highScore));
 

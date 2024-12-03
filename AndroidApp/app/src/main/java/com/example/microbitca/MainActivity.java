@@ -125,41 +125,67 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         * method to be sent to the database once Ten punches have been recorded.
         * */
 
-        ArrayList<String> punchData = new ArrayList<>();
+        ArrayList<Float> punchData = new ArrayList<Float>();
         ArrayList<String> tempPunchData = new ArrayList<String>();
+        this.textView2 = (TextView) findViewById(R.id.textView2);
 
         float currentScore= 0;
-
+        // Set the threshold value to greater than 1200
         if (xG >= 1200) {
+            // if current output from microbit is greater than the previously set highscore continue
             if(xG > highScore ) {
                 highScore = xG;
+                // Log the current value for testing
                 Log.i("testDatahighScore",String.valueOf(highScore));
 
-                this.textView2 = (TextView) findViewById(R.id.textView2);
+                // add the current highest value to an array
+                tempPunchData.add(String.valueOf(highScore));
+                Log.i("testDataPunchData", String.valueOf(tempPunchData));
+                // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
 
-                punchData.add(String.valueOf(xG));
-                highScore = xG;
+                // clear the tempPunchData
 
-                highScoreForArr=highScore;
-                if (highScore <= highScoreForArr){
-//                    sendNotification("Punch Detected", "X Value: " + highScoreForArr);
-                    textView2.setText(""+xG);
-                    highScoreForArr=highScore;
-                    testData.add(String.valueOf(highScoreForArr));
-                    Log.i("testData",String.valueOf(testData));
+                // Set the score textView
+                textView2.setText(""+highScore);
 
-                    Object[] listviewData = new ArrayList[]{testData};
+                // update the listView
+                ArrayAdapter<Float> updateAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  punchData);
+                listView.setAdapter(updateAdapter);
 
-                    ArrayAdapter<Object> updateAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  listviewData);
+                // reset the highscore to 0
+            } else{
+                // If the current value is not greater than the threshold value log a message to track
+                Log.i("testData", "Current output is not greater than threshold value of 1200");
+            }
 
-                    listView.setAdapter(updateAdapter);
-                    saveScoreToFirebase(String.valueOf(highScore));
-                }
-                xG = 0;
+
+            highScoreForArr = highScore;
+            xG = 0;
+            if (String.valueOf(highScoreForArr) !="0.0" ) {
+                // Save data to the database
+                saveScoreToFirebase(String.valueOf(highScore));
+
+                // Send a notification to the user containing their punch data
+                sendNotification("Punch Detected", "X Value: " + highScoreForArr);
+                // Add high score to punchData array
+                punchData.add(highScoreForArr);
+                // Log the punchData
+//                Log.i("testData", "PunchData array"+String.valueOf(punchData));
+                String[] punchArray = punchData.toArray(new String[0]);
+                Log.i("testData", String.valueOf(punchArray));
+            } else {
+                Log.i("testData", "Not sending data to firebase");
             }
             return highScore;
         }
-//        saveScoreToFirebase(String.valueOf(highScore));
+//                 Set the value of the highscore
+//                highScoreForArr = highScore;
+//                if (highScore <= highScoreForArr && highScoreForArr != 0.0){
+//                    highScoreForArr=highScore;
+//                    testData.add(String.valueOf(highScoreForArr));
+//                    Log.i("testData",String.valueOf(testData));
+//                    Object[] listviewData = new ArrayList[]{testData};
+//                }
         highScore=0;
         return highScore;
     }

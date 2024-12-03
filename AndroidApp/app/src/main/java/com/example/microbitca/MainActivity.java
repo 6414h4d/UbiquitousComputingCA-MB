@@ -38,12 +38,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;
-    String[] PERMISSIONS = {
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.BLUETOOTH_ADVERTISE,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-    };
+    String[] PERMISSIONS = { android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.ACCESS_FINE_LOCATION,};
 
     FirebaseDatabase db = FirebaseDatabase.getInstance();
     DatabaseReference dbRef = db.getReference();
@@ -166,9 +161,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             highScoreForArr = highScore;
             xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
-                // select the highest value from the tempPunchArray and add it to the
-                // Save data to the database
-                saveScoreToFirebase(String.valueOf(highScore));
 
                 // Send a notification to the user containing their punch data
                 sendNotification("Punch Detected", "X Value: " + highScoreForArr);
@@ -178,11 +170,16 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
+                // Save data to database
+                saveScoreToFirebase(String.valueOf(highScore));
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
-            return highScore;
         }
+        // select the highest value from the tempPunchArray and add it to the
+
+        // Save data to the database
+
 //                 Set the value of the highscore
 //                highScoreForArr = highScore;
 //                if (highScore <= highScoreForArr && highScoreForArr != 0.0){

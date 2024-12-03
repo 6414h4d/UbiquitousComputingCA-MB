@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 // Add high score to punchData array
                 punchData.add(highScoreForArr);
                 // Log the punchData
-//                Log.i("testData", "PunchData array"+String.valueOf(punchData));
+                Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
             } else {

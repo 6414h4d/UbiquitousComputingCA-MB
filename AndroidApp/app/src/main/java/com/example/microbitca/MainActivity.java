@@ -42,12 +42,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;
-    String[] PERMISSIONS = {
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.BLUETOOTH_ADVERTISE,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-    };
+    String[] PERMISSIONS = { android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.ACCESS_FINE_LOCATION,};
 
     FirebaseDatabase db = FirebaseDatabase.getInstance();
     DatabaseReference dbRef = db.getReference();
@@ -89,30 +84,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         Log.i("Login", userNameGlobal);
     }
 
-    private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
-        Log.i("Firebase-Load", "loadScoresFromFirebase called");
-        DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
-        scoresRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
-                highScoreArray.clear(); // Clear existing data to avoid duplicates
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
-                    Map<String, Object> score = (Map<String, Object>) snapshot.getValue();
-                    if (score != null) {
-                        highScoreArray.add(String.valueOf(score));
-                    }
-                }
-                adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.e("Firebase", "Failed to read scores", databaseError.toException());
-            }
-        });
-    }
 
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
@@ -226,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         return highScore;
     }
 
+
+
     private void saveScoreToFirebase(String highScore) {
         // Create a unique key for the score entry
         String key = dbRef.child("scores").push().getKey();
@@ -241,6 +214,33 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         loadScoresFromFirebase(adapter);
+    }
+
+
+
+    private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
+        Log.i("Firebase-Load", "loadScoresFromFirebase called");
+        DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
+        scoresRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                highScoreArray.clear(); // Clear existing data to avoid duplicates
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                    Map<String, Object> score = (Map<String, Object>) snapshot.getValue();
+                    if (score != null) {
+                        highScoreArray.add(String.valueOf(score));
+                    }
+                }
+                adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to read scores", databaseError.toException());
+            }
+        });
     }
 
 

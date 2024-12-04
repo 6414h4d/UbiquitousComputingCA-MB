@@ -7,8 +7,8 @@ If the connection fails, create a toast to alert the user
 
  */
 public class PunchPowerModel {
-    public String punchPower;
     public String userId;
+    public String punchPower;
 
     public PunchPowerModel(String userId,String punchPower){
         this.userId = userId;

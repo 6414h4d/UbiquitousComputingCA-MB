@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     DatabaseReference dbRef = db.getReference();
 
     ArrayList<String> testData = new ArrayList<>();
-    ArrayList<String> highScoreArray = new ArrayList<String>();
+    ArrayList<Object> highScoreArray = new ArrayList<Object>();
     float highScore=0;
     float highScoreForArr=0;
 
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         scoreView.setText("0");
 
         // Initialize adapter with empty data
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
+        ArrayAdapter<Object> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         listView.setAdapter(adapter);
 
         // Check permissions
@@ -210,19 +210,19 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         if (key != null) {
             // Save the score under the "scores" path
-            dbRef.child("scores").child("scores").child(key).setValue(punch)
+            dbRef.child("scores").child(key).setValue(punch)
                     .addOnSuccessListener(aVoid -> Log.i("Firebase-Save", "Score saved successfully: " + highScore))
                     .addOnFailureListener(e -> Log.e("Firebase-Save", "Error saving score", e));
         } else {
             Log.e("Firebase-Save", "Firebase key is null. Unable to save score.");
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
+        ArrayAdapter<Object> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         loadScoresFromFirebase(adapter);
     }
 
 
 
-    private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
+    private void loadScoresFromFirebase(ArrayAdapter<Object> adapter) {
         Log.i("Firebase-Load", "loadScoresFromFirebase called");
         DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
         scoresRef.addValueEventListener(new ValueEventListener() {
@@ -249,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         });
     }
 
-
     public void TenPunchTest(View view) {
         /*
          * Trigger when the Start Test button is pressed. When the 10 punches
@@ -275,8 +274,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
             }
         }
-
-
     }
 
     public void sendNotification(String titleText, String contentText) {

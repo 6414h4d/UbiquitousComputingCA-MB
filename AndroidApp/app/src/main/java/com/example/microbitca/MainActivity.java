@@ -81,16 +81,20 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         startService(new Intent(this, firebase_service.class));
 
         // Load scores from Firebase
+        Log.i("Firebase", "called loadScoresFromFirebase");
         loadScoresFromFirebase(adapter);
     }
 
     private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
+        Log.i("Firebase", "loadScoresFromFirebase called");
         DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
         scoresRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
                 highScoreArray.clear(); // Clear existing data to avoid duplicates
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
                     String score = snapshot.getValue(String.class);
                     if (score != null) {
                         highScoreArray.add(score);
@@ -234,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     }
 
 
-    public void PunchTest(View view) {
+    public void TenPunchTest(View view) {
         /*
          * Trigger when the Start Test button is pressed. When the 10 punches
          * have been recorded trigger the onPunchTestComplete method in

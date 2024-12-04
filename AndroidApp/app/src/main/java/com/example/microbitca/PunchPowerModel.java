@@ -10,7 +10,7 @@ public class PunchPowerModel {
     public String punchPower;
     public String userId;
 
-    public PunchPowerModel(String punchPower,String userId){
+    public PunchPowerModel(String userId,String punchPower){
         this.userId = userId;
         this.punchPower = punchPower;
     }

@@ -198,15 +198,19 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     }
 
 
-
     private void saveScoreToFirebase(String highScore) {
+        PunchPowerModel punch = new PunchPowerModel(userNameGlobal, highScore);
+
+
         // Create a unique key for the score entry
         String key = dbRef.child("scores").push().getKey();
         Log.i("Firebase-Save", "Generated key: " + key);
 
+
+
         if (key != null) {
             // Save the score under the "scores" path
-            dbRef.child("scores").child("scores").child(key).setValue(highScore)
+            dbRef.child("scores").child("scores").child(key).setValue(punch)
                     .addOnSuccessListener(aVoid -> Log.i("Firebase-Save", "Score saved successfully: " + highScore))
                     .addOnFailureListener(e -> Log.e("Firebase-Save", "Error saving score", e));
         } else {
@@ -222,10 +226,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         Log.i("Firebase-Load", "loadScoresFromFirebase called");
         DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
         scoresRef.addValueEventListener(new ValueEventListener() {
+            
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
                 highScoreArray.clear(); // Clear existing data to avoid duplicates
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
                     Map<String, Object> score = (Map<String, Object>) snapshot.getValue();

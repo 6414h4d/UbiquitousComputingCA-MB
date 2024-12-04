@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 tempPunchData.add(highScore);
                 Log.i("testDataPunchData", String.valueOf(tempPunchData));
                 // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
+                tempPunchData.add(highScore);
 
                 // clear the tempPunchData
 
@@ -165,29 +166,26 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
 
             highScoreForArr = highScore;
-
+            xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
+//                Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray()));
                 Float[] tempArray = tempPunchData.toArray(new Float[0]);
-                Log.i("ARRAYOUTPUT", Arrays.toString(tempArray)+tempArray[0]);
-
+                Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray(new Float[0])));
 
                 // select the highest value from the tempPunchArray and add it to the
+
 
                 // Save data to the database
                 saveScoreToFirebase(String.valueOf(highScore));
 
                 // Send a notification to the user containing their punch data
                 sendNotification("Punch Detected", "X Value: " + highScoreForArr);
-
                 // Add high score to punchData array
                 punchData.add(highScoreForArr);
-
                 // Log the punchData
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
-
                 Log.i("testData", String.valueOf(punchArray));
-
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
@@ -212,6 +210,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         String key = dbRef.child("scores").push().getKey();
         Log.i("Firebase-Save", "Generated key: " + key);
 
+
+
         if (key != null) {
             // Save the score under the "scores" path
             dbRef.child("scores").child(key).setValue(punch)
@@ -220,8 +220,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         } else {
             Log.e("Firebase-Save", "Firebase key is null. Unable to save score.");
         }
-        ArrayAdapter<Object> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
-        loadScoresFromFirebase(adapter);
+        ArrayAdapter<Object> refreshAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
+        loadScoresFromFirebase(refreshAdapter);
     }
 
 
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         Log.i("Firebase-Load", "loadScoresFromFirebase called");
         DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
         scoresRef.addValueEventListener(new ValueEventListener() {
-            
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));

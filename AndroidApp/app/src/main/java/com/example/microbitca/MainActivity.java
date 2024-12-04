@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         float currentScore= 0;
         // Set the threshold value to greater than 1200
-        if (xG >= 1200) {
+        while (xG >= 1200) {
             // if current output from microbit is greater than the previously set highscore continue
             if(xG > highScore ) {
                 highScore = xG;
@@ -153,10 +153,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
                 // Set the score textView
                 textView2.setText(""+highScore);
-
-                // update the listView
-                ArrayAdapter<Float> updateAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  punchData);
-                listView.setAdapter(updateAdapter);
 
                 // reset the highscore to 0
             } else{

@@ -30,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         Log.i("Login", userNameGlobal);
     }
 
-
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
             for (String permission : permissions) {
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
          * */
 
         ArrayList<Float> punchData = new ArrayList<Float>();
-        ArrayList<String> tempPunchData = new ArrayList<String>();
+        ArrayList<Float> tempPunchData = new ArrayList<Float>();
         this.textView2 = (TextView) findViewById(R.id.textView2);
 
         float currentScore= 0;
@@ -144,10 +144,10 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 Log.i("testDatahighScore",String.valueOf(highScore));
 
                 // add the current highest value to an array
-                tempPunchData.add(String.valueOf(highScore));
+                tempPunchData.add(highScore);
                 Log.i("testDataPunchData", String.valueOf(tempPunchData));
                 // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
-                tempPunchData.add(String.valueOf(highScore));
+                tempPunchData.add(highScore);
 
                 // clear the tempPunchData
 
@@ -168,18 +168,26 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             highScoreForArr = highScore;
             xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
+                Float[] tempArray = tempPunchData.toArray(new Float[0]);
+                Log.i("ARRAYOUTPUT", Arrays.toString(tempArray)+tempArray[0]);
+
                 // select the highest value from the tempPunchArray and add it to the
+
                 // Save data to the database
                 saveScoreToFirebase(String.valueOf(highScore));
 
                 // Send a notification to the user containing their punch data
                 sendNotification("Punch Detected", "X Value: " + highScoreForArr);
+
                 // Add high score to punchData array
                 punchData.add(highScoreForArr);
+
                 // Log the punchData
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
+
                 Log.i("testData", String.valueOf(punchArray));
+
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
@@ -197,16 +205,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         return highScore;
     }
 
-
     private void saveScoreToFirebase(String highScore) {
         PunchPowerModel punch = new PunchPowerModel(userNameGlobal, highScore);
-
 
         // Create a unique key for the score entry
         String key = dbRef.child("scores").push().getKey();
         Log.i("Firebase-Save", "Generated key: " + key);
-
-
 
         if (key != null) {
             // Save the score under the "scores" path
@@ -219,7 +223,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayAdapter<Object> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         loadScoresFromFirebase(adapter);
     }
-
 
 
     private void loadScoresFromFirebase(ArrayAdapter<Object> adapter) {

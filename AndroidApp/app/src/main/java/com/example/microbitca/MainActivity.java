@@ -147,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 tempPunchData.add(highScore);
                 Log.i("testDataPunchData", String.valueOf(tempPunchData));
                 // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
-                tempPunchData.add(highScore);
 
                 // clear the tempPunchData
 
@@ -166,10 +165,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
 
             highScoreForArr = highScore;
-            xG = 0;
+
             if (String.valueOf(highScoreForArr) !="0.0" ) {
                 Float[] tempArray = tempPunchData.toArray(new Float[0]);
                 Log.i("ARRAYOUTPUT", Arrays.toString(tempArray)+tempArray[0]);
+
 
                 // select the highest value from the tempPunchArray and add it to the
 

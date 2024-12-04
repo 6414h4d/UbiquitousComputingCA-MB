@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
@@ -95,9 +96,9 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 highScoreArray.clear(); // Clear existing data to avoid duplicates
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
-                    String score = snapshot.getValue(String.class);
+                    Map<String, Object> score = (Map<String, Object>) snapshot.getValue();
                     if (score != null) {
-                        highScoreArray.add(score);
+                        highScoreArray.add(String.valueOf(score));
                     }
                 }
                 adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView

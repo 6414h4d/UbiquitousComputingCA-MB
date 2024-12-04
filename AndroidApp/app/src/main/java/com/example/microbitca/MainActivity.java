@@ -20,6 +20,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
@@ -38,7 +40,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;
-    String[] PERMISSIONS = { android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.ACCESS_FINE_LOCATION,};
+    String[] PERMISSIONS = {
+            android.Manifest.permission.BLUETOOTH_SCAN,
+            android.Manifest.permission.BLUETOOTH_CONNECT,
+            android.Manifest.permission.BLUETOOTH_ADVERTISE,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+    };
 
     FirebaseDatabase db = FirebaseDatabase.getInstance();
     DatabaseReference dbRef = db.getReference();
@@ -62,11 +69,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Set default score value
         scoreView.setText("0");
 
-//        Object topTen = populateListView();
-
-
-        // Populate the ListView with sample data
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,  testData);
+        // Initialize adapter with empty data
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         listView.setAdapter(adapter);
 
         // Check permissions
@@ -76,6 +80,35 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         // Start Firebase service
         startService(new Intent(this, firebase_service.class));
+
+        // Load scores from Firebase
+        Log.i("Firebase", "called loadScoresFromFirebase");
+        loadScoresFromFirebase(adapter);
+    }
+
+    private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
+        Log.i("Firebase", "loadScoresFromFirebase called");
+        DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
+        scoresRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                highScoreArray.clear(); // Clear existing data to avoid duplicates
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                    Map<String, Object> score = (Map<String, Object>) snapshot.getValue();
+                    if (score != null) {
+                        highScoreArray.add(String.valueOf(score));
+                    }
+                }
+                adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to read scores", databaseError.toException());
+            }
+        });
     }
 
     public static boolean hasPermissions(Context context, String... permissions) {
@@ -116,12 +149,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     @Override
     public float dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
-        * Handle data received from the Microbit.  Set the value threshold for data
-        * received from the Microbit. While the threshold has been exceeded, add
-        * data to a 'punch power' array. Once the threshold is no longer being exceeded,
-        * exit the loop and select the Highest value and send this to the TenPunchTest
-        * method to be sent to the database once Ten punches have been recorded.
-        * */
+         * Handle data received from the Microbit.  Set the value threshold for data
+         * received from the Microbit. While the threshold has been exceeded, add
+         * data to a 'punch power' array. Once the threshold is no longer being exceeded,
+         * exit the loop and select the Highest value and send this to the TenPunchTest
+         * method to be sent to the database once Ten punches have been recorded.
+         * */
 
         ArrayList<Float> punchData = new ArrayList<Float>();
         ArrayList<String> tempPunchData = new ArrayList<String>();
@@ -161,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             highScoreForArr = highScore;
             xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
+                // select the highest value from the tempPunchArray and add it to the
+                // Save data to the database
+                saveScoreToFirebase(String.valueOf(highScore));
 
                 // Send a notification to the user containing their punch data
                 sendNotification("Punch Detected", "X Value: " + highScoreForArr);
@@ -170,18 +206,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
-
-
-                // Save data to database
-                saveScoreToFirebase(String.valueOf(highScore));
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
+            return highScore;
         }
-        // select the highest value from the tempPunchArray and add it to the
-
-        // Save data to the database
-
 //                 Set the value of the highscore
 //                highScoreForArr = highScore;
 //                if (highScore <= highScoreForArr && highScoreForArr != 0.0){
@@ -195,24 +224,27 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     }
 
     private void saveScoreToFirebase(String highScore) {
-        String key = dbRef.push().getKey();
-        Log.i("Firebase","key"+key);
+        // Create a unique key for the score entry
+        String key = dbRef.child("scores").push().getKey();
+        Log.i("Firebase", "Generated key: " + key);
+
         if (key != null) {
-            dbRef.child(key).setValue(highScore)
-                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Score saved: " + highScore))
+            // Save the score under the "scores" path
+            dbRef.child("scores").child("scores").child(key).setValue(highScore)
+                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Score saved successfully: " + highScore))
                     .addOnFailureListener(e -> Log.e("Firebase", "Error saving score", e));
         } else {
-            Log.e("Firebase", "Firebase key is null");
+            Log.e("Firebase", "Firebase key is null. Unable to save score.");
         }
     }
 
 
-    public void PunchTest(View view) {
+    public void TenPunchTest(View view) {
         /*
-        * Trigger when the Start Test button is pressed. When the 10 punches
-        * have been recorded trigger the onPunchTestComplete method in
-        * firebase_service.
-        * */
+         * Trigger when the Start Test button is pressed. When the 10 punches
+         * have been recorded trigger the onPunchTestComplete method in
+         * firebase_service.
+         * */
 
 
         HashMap<String, String> TenPunchTest = new HashMap<String, String>();

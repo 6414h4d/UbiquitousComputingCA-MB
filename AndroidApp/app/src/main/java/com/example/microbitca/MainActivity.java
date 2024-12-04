@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         if (key != null) {
             // Save the score under the "scores" path
-            dbRef.child("scores").child(key).setValue(highScore)
+            dbRef.child("scores").child("scores").child(key).setValue(highScore)
                     .addOnSuccessListener(aVoid -> Log.i("Firebase", "Score saved successfully: " + highScore))
                     .addOnFailureListener(e -> Log.e("Firebase", "Error saving score", e));
         } else {

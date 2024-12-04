@@ -82,12 +82,12 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         startService(new Intent(this, firebase_service.class));
 
         // Load scores from Firebase
-        Log.i("Firebase", "called loadScoresFromFirebase");
+        Log.i("Firebase-Load", "called loadScoresFromFirebase");
         loadScoresFromFirebase(adapter);
     }
 
     private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
-        Log.i("Firebase", "loadScoresFromFirebase called");
+        Log.i("Firebase-Load", "loadScoresFromFirebase called");
         DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
         scoresRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -226,15 +226,15 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     private void saveScoreToFirebase(String highScore) {
         // Create a unique key for the score entry
         String key = dbRef.child("scores").push().getKey();
-        Log.i("Firebase", "Generated key: " + key);
+        Log.i("Firebase-Save", "Generated key: " + key);
 
         if (key != null) {
             // Save the score under the "scores" path
             dbRef.child("scores").child("scores").child(key).setValue(highScore)
-                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Score saved successfully: " + highScore))
-                    .addOnFailureListener(e -> Log.e("Firebase", "Error saving score", e));
+                    .addOnSuccessListener(aVoid -> Log.i("Firebase-Save", "Score saved successfully: " + highScore))
+                    .addOnFailureListener(e -> Log.e("Firebase-Save", "Error saving score", e));
         } else {
-            Log.e("Firebase", "Firebase key is null. Unable to save score.");
+            Log.e("Firebase-Save", "Firebase key is null. Unable to save score.");
         }
     }
 

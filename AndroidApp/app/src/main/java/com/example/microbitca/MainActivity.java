@@ -1,6 +1,8 @@
 package com.example.microbitca;
 
 
+import static com.example.microbitca.LoginActivity.userNameGlobal;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Load scores from Firebase
         Log.i("Firebase-Load", "called loadScoresFromFirebase");
         loadScoresFromFirebase(adapter);
+        Log.i("Login", userNameGlobal);
     }
 
     private void loadScoresFromFirebase(ArrayAdapter<String> adapter) {
@@ -236,6 +239,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         } else {
             Log.e("Firebase-Save", "Firebase key is null. Unable to save score.");
         }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
+        loadScoresFromFirebase(adapter);
     }
 
 
@@ -245,7 +250,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
          * have been recorded trigger the onPunchTestComplete method in
          * firebase_service.
          * */
-
 
         HashMap<String, String> TenPunchTest = new HashMap<String, String>();
         ArrayList<Integer> values = new ArrayList<Integer>();

@@ -23,6 +23,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private TextView registerLink; // Register link for navigating to RegisterActivity
     private DatabaseReference databaseReference;
+    public static String userNameGlobal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear previous activity stack
                             startActivity(intent);
+                            userNameGlobal = username;
                             finish(); // Close login activity
                         }
                     } else {

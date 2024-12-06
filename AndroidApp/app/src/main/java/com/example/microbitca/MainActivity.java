@@ -120,8 +120,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         }
     };
 
+
     @Override
-    public float dataReceived(float xG, float yG, float zG, float pitch, float roll) {
+
+
+    public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
          * Handle data received from the Microbit.  Set the value threshold for data
          * received from the Microbit. While the threshold has been exceeded, add
@@ -134,26 +137,22 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayList<Float> tempPunchData = new ArrayList<Float>();
         this.textView2 = (TextView) findViewById(R.id.textView2);
 
+
         float currentScore= 0;
         // Set the threshold value to greater than 1200
         while (xG >= 1200) {
             // if current output from microbit is greater than the previously set highscore continue
             if(xG > highScore ) {
                 highScore = xG;
-                // Log the current value for testing
-                Log.i("testDatahighScore",String.valueOf(highScore));
+                Log.i("testDatahighScore",String.valueOf(highScore)); // Log the current value for testing
 
-                // add the current highest value to an array
-                tempPunchData.add(highScore);
+                tempPunchData.add(highScore); // add the current highest value to an array
                 Log.i("testDataPunchData", String.valueOf(tempPunchData));
-                // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
-                tempPunchData.add(highScore);
+
+                tempPunchData.add(highScore); // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
 
                 // clear the tempPunchData
-
-                // Set the score textView
-                textView2.setText(""+highScore);
-
+                textView2.setText(""+highScore); // Set the score textView
                 // reset the highscore to 0
             } else{
                 // If the current value is not greater than the threshold value log a message to track
@@ -163,41 +162,36 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
             highScoreForArr = highScore;
             xG = 0;
-            if (String.valueOf(highScoreForArr) !="0.0" ) {
-//                Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray()));
+            if (String.valueOf(highScoreForArr) != "0.0" ) {
+                // Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray()));
                 Float[] tempArray = tempPunchData.toArray(new Float[0]);
                 Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray(new Float[0])));
 
                 // select the highest value from the tempPunchArray and add it to the
 
+                saveScoreToFirebase(String.valueOf(highScore)); // Save data to the database
 
-                // Save data to the database
-                saveScoreToFirebase(String.valueOf(highScore));
+                sendNotification("Punch Detected", "X Value: " + highScoreForArr); // Send a notification to the user containing their punch data
+                punchData.add(highScoreForArr); // Add high score to punchData array
 
-                // Send a notification to the user containing their punch data
-                sendNotification("Punch Detected", "X Value: " + highScoreForArr);
-                // Add high score to punchData array
-                punchData.add(highScoreForArr);
-                // Log the punchData
-                Log.i("testData", "PunchData array"+String.valueOf(punchData));
+                Log.i("testData", "PunchData array"+String.valueOf(punchData)); // Log the punchData
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
-            return highScore;
         }
-//                 Set the value of the highscore
-//                highScoreForArr = highScore;
-//                if (highScore <= highScoreForArr && highScoreForArr != 0.0){
-//                    highScoreForArr=highScore;
-//                    testData.add(String.valueOf(highScoreForArr));
-//                    Log.i("testData",String.valueOf(testData));
-//                    Object[] listviewData = new ArrayList[]{testData};
-//                }
         highScore=0;
-        return highScore;
     }
+
+
+
+
+
+
+
+
+
 
     private void saveScoreToFirebase(String highScore) {
         PunchPowerModel punch = new PunchPowerModel(userNameGlobal, highScore);
@@ -205,8 +199,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Create a unique key for the score entry
         String key = dbRef.child("scores").push().getKey();
         Log.i("Firebase-Save", "Generated key: " + key);
-
-
 
         if (key != null) {
             // Save the score under the "scores" path
@@ -219,7 +211,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayAdapter<Object> refreshAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         loadScoresFromFirebase(refreshAdapter);
     }
-
 
     private void loadScoresFromFirebase(ArrayAdapter<Object> adapter) {
         Log.i("Firebase-Load", "loadScoresFromFirebase called");
@@ -286,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             mNotificationManager.createNotificationChannel(notificationChannel);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(titleText)
                     .setContentText(contentText)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -29,10 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
-
-
-
 public class BLEService extends Service {
 
     // Bluetooth variables
@@ -48,13 +44,14 @@ public class BLEService extends Service {
     float[] accel_input;
     float[] accel_output;
 
+
     //microbit accelerometer BLE service UUIDs
     final UUID ACC_SERVICE_SERVICE_UUID = UUID.fromString("E95D0753-251D-470A-A062-FA1922DFA9A8");
     final UUID ACC_DATA_CHARACTERISTIC_UUID = UUID.fromString("E95DCA4B-251D-470A-A062-FA1922DFA9A8");
     final UUID ACC_PERIOD_CHARACTERISTIC_UUID = UUID.fromString("E95DFB24-251D-470A-A062-FA1922DFA9A8");
     final String TAG = "MicroBitConnectService";
-    final String uBit_name = "BBC micro:bit [vepiv]";
-//    final String uBit_name = "BBC micro:bit";
+    //    final String uBit_name = "BBC micro:bit [vepiv]";
+    final String uBit_name = "BBC micro:bit";
 
     //list of listeners for data received events
     private List<BLEListener> listeners = new ArrayList<BLEListener>();
@@ -73,6 +70,8 @@ public class BLEService extends Service {
      * Class used for the client Binder. The Binder object is responsible for returning an instance
      * of "BLEService" to the client.
      */
+
+
     public class BLEBinder extends Binder {
         BLEService getService() {
             // Return this instance of MyService so clients can call public methods
@@ -86,12 +85,12 @@ public class BLEService extends Service {
         return bleBinder;
     }
 
+
     @Override
-    public int onStartCommand(Intent intent,
-                              int flags,
-                              int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
     }
+
 
     public void startScan() {
         bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -101,6 +100,7 @@ public class BLEService extends Service {
         bluetoothLeScanner.startScan(bluetoothScanCallback);
         Log.i(TAG, "startScan()");
     }
+
 
     // BLUETOOTH CONNECTION
     private void connectDevice(BluetoothDevice device) {
@@ -126,29 +126,28 @@ public class BLEService extends Service {
     private class BluetoothScanCallback extends ScanCallback {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            Log.i(TAG, "onScanResult"+result.getDevice().getName());
+
+            Log.i(TAG, "onScanResult" + result.getDevice().getName());
             if (result.getDevice().getName() != null){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                     Log.i(TAG,result.getDevice().getAlias());
-                else {
-                    Log.i(TAG, result.getDevice().getName());
-                    Log.i("BluetoothConnectionFailed", "Failed to connect to Microbit");
-                    Toast.makeText(BLEService.this, "Failed to connect to Microbit", Toast.LENGTH_SHORT).show();
-                }
+                else
+                    Log.i(TAG,result.getDevice().getName());
                 if (result.getDevice().getName().equals(uBit_name)) {
                     // When find your device, connect.
                     connectDevice(result.getDevice());
                     bluetoothLeScanner.stopScan(bluetoothScanCallback); // stop scan
-                    Log.i("BluetoothConnectionSuccessful","Successfully connected to Microbit");
                     Toast.makeText(BLEService.this, "Connected to Microbit", Toast.LENGTH_SHORT).show();
                 }
             }
         }
 
+
         @Override
         public void onBatchScanResults(List<ScanResult> results) {
             Log.i(TAG, "onBatchScanResults");
         }
+
 
         @Override
         public void onScanFailed(int errorCode) {
@@ -187,12 +186,9 @@ public class BLEService extends Service {
             {
                 Log.i(TAG,characteristic.getUuid().toString());
             }
-
             // Reference your UUIDs
             BluetoothGattCharacteristic ACC_DATA_characteristicID = gatt.getService(ACC_SERVICE_SERVICE_UUID).getCharacteristic(ACC_DATA_CHARACTERISTIC_UUID);
             gatt.setCharacteristicNotification(ACC_DATA_characteristicID, true);
-
-
             //activate any descriptors for the characteristics
             List<BluetoothGattDescriptor> ACC_DATA_descriptors = ACC_DATA_characteristicID.getDescriptors();
             for (BluetoothGattDescriptor descriptor : ACC_DATA_descriptors)
@@ -201,8 +197,8 @@ public class BLEService extends Service {
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 gatt.writeDescriptor(descriptor);
             }
-
         }
+
         //this is the callback that receives the accelerometer data
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -217,7 +213,7 @@ public class BLEService extends Service {
             float xG = (float)byteArray2short(xG_bytes);
             float yG = (float)byteArray2short(yG_bytes);
             float zG = (float)byteArray2short(zG_bytes);
-            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int)Math.sqrt(xG*xG+yG*yG+zG*zG)+".0");
+//            Log.i(TAG, "acceleration: " + xG + " : " + yG + " : " + zG + " : " + (int)Math.sqrt(xG*xG+yG*yG+zG*zG)+".0");
             //calculate the refresh rate (Hz)
             if (numMeasurements == 0) {
                 t0 = System.currentTimeMillis();
@@ -231,7 +227,6 @@ public class BLEService extends Service {
             }
             else
                 numMeasurements++;
-
             accel_input[0] = xG;accel_input[1]=yG;accel_input[2]=zG;
             if (filter)
             {
@@ -248,17 +243,14 @@ public class BLEService extends Service {
             //convert radians into degrees
             pitch = pitch * (180.0 / Math.PI);
             roll = -1 * roll * (180.0 / Math.PI);
-            Log.i(TAG, "pitch : roll: " + (int)pitch + " : " + (int)roll);
+//            Log.i(TAG, "pitch : roll: " + (int)pitch + " : " + (int)roll);
             for (BLEListener listener : listeners)
             {
-                try {
-                    listener.dataReceived(accel_output[0],accel_output[1],accel_output[2],(float)pitch,(float)roll);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                listener.dataReceived(accel_output[0],accel_output[1],accel_output[2],(float)pitch,(float)roll);
             }
             //Log.i("TAG", Thread.currentThread().getName());
         }
+
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
@@ -267,16 +259,15 @@ public class BLEService extends Service {
     }
 
     //convert byte array[2 bytes] to short
-    private short byteArray2short(byte [] bytes)
-    {
+    private short byteArray2short(byte [] bytes) {
         ByteBuffer bb = ByteBuffer.allocate(2);
         bb.order(ByteOrder.LITTLE_ENDIAN);
         bb.put(bytes[0]);
         bb.put(bytes[1]);
         return bb.getShort(0);
     }
-    public void changePeriod(short period)
-    {
+
+    public void changePeriod(short period) {
         if (gattClient != null) {
             BluetoothGattCharacteristic ACC_PERIOD_characteristicID = gattClient.getService(ACC_SERVICE_SERVICE_UUID).getCharacteristic(ACC_PERIOD_CHARACTERISTIC_UUID);
             //boolean result = gatt.readCharacteristic(ACC_PERIOD_characteristicID);
@@ -288,7 +279,6 @@ public class BLEService extends Service {
             gattClient.writeCharacteristic(ACC_PERIOD_characteristicID);
         }
     }
-
     /*
      * @see http://en.wikipedia.org/wiki/Low-pass_filter#Algorithmic_implementation
      * @see http://developer.android.com/reference/android/hardware/SensorEvent.html#values
@@ -300,11 +290,8 @@ public class BLEService extends Service {
         }
         return output;
     }
-
     public void setFilter(boolean filter)
     {
         this.filter = filter;
     }
-
 }
-

@@ -10,7 +10,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
         android:gravity="center"
+        android:paddingTop="18dp"
         android:paddingBottom="16dp"
         android:text="Login"
         android:textSize="24sp"
@@ -20,20 +22,26 @@
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="E-mail" />
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginVertical="12dp"
+        android:hint="E-mail"
+        android:paddingTop="12dp" />
 
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginVertical="12dp"
         android:hint="Password"
         android:inputType="textPassword"
-        />
+        android:paddingTop="12dp" />
 
     <Button
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
         android:backgroundTint="#009688"
         android:text="Login" />
 

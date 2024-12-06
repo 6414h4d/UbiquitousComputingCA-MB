@@ -1,6 +1,7 @@
 package com.example.microbitca;
 
-import static kotlinx.coroutines.DelayKt.delay;
+
+import static com.example.microbitca.LoginActivity.userNameGlobal;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,18 +18,21 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements BLEListener {
     private ListView listView;
@@ -36,16 +40,18 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
     private TextView textView2;
 
     BLEService service;
-    //HI
     boolean mBound = false;
 
     int PERMISSION_ALL = 1;
-    String[] PERMISSIONS = {
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.BLUETOOTH_ADVERTISE,
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-    };
+    String[] PERMISSIONS = { android.Manifest.permission.BLUETOOTH_SCAN, android.Manifest.permission.BLUETOOTH_CONNECT, android.Manifest.permission.BLUETOOTH_ADVERTISE, android.Manifest.permission.ACCESS_FINE_LOCATION,};
+
+    FirebaseDatabase db = FirebaseDatabase.getInstance();
+    DatabaseReference dbRef = db.getReference();
+
+    ArrayList<String> testData = new ArrayList<>();
+    ArrayList<Object> highScoreArray = new ArrayList<Object>();
+    float highScore=0;
+    float highScoreForArr=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,9 +67,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         // Set default score value
         scoreView.setText("0");
 
-        // Populate the ListView with sample data
-        String[] testData = {"Test Item 1", "Test Item 2", "Test Item 3"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, testData);
+        // Initialize adapter with empty data
+        ArrayAdapter<Object> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
         listView.setAdapter(adapter);
 
         // Check permissions
@@ -73,6 +78,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
         // Start Firebase service
         startService(new Intent(this, firebase_service.class));
+
+        // Load scores from Firebase
+        Log.i("Firebase-Load", "called loadScoresFromFirebase");
+        loadScoresFromFirebase(adapter);
+        Log.i("Login", userNameGlobal);
     }
 
     public static boolean hasPermissions(Context context, String... permissions) {
@@ -104,46 +114,118 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             service.addBLEListener(MainActivity.this);
             mBound = true;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
         }
     };
 
+
     @Override
+
+
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
         /*
-         * Handle data received from the Microbit. Calculate the speed from the accelerometer data.
-         * Once the speed is calculated, it will be uploaded to Firebase.
+         * Handle data received from the Microbit.  Set the value threshold for data
+         * received from the Microbit. While the threshold has been exceeded, add
+         * data to a 'punch power' array. Once the threshold is no longer being exceeded,
+         * exit the loop and select the Highest value and send this to the TenPunchTest
+         * method to be sent to the database once Ten punches have been recorded.
          * */
-        float speed = (float) Math.sqrt(xG * xG + yG * yG + zG * zG);  // Calculate the magnitude of acceleration
 
-        // Update the UI with the calculated speed
-        this.textView2 = findViewById(R.id.textView2);
-        textView2.setText(String.format("%.2f", speed));
+        ArrayList<Float> punchData = new ArrayList<Float>();
+        ArrayList<Float> tempPunchData = new ArrayList<Float>();
+        this.textView2 = (TextView) findViewById(R.id.textView2);
 
-        // Upload speed data to Firebase
-        uploadSpeedToFirebase(speed);
+        float currentScore= 0;
+        // Set the threshold value to greater than 1200
+        while (xG >= 1200) {
+            // if current output from microbit is greater than the previously set highscore continue
+            if(xG > highScore ) {
+                highScore = xG;
+                // Log the current value for testing
 
-        // Optional: Add more processing or actions based on the speed value
-        Log.i("SpeedData", "Speed: " + speed);
-        sendNotification("Speed Detected", "Current Speed: " + speed);
+                // add the current highest value to an array
+                if(tempPunchData.size() < 1 ){
+                    if(tempPunchData.get(-1) < highScore ){
+                        tempPunchData.add(highScore);
+                    }
+                } else {
+                    tempPunchData.add(highScore);
+                    Log.i("testDataPunchData", ""+tempPunchData);
+                }
+                // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
+
+                // Set the score textView
+                textView2.setText(""+highScore);
+
+                // reset the highscore to 0
+            } else{
+                // If the current value is not greater than the threshold value log a message to track
+                Log.i("testData", "Current output is not greater than threshold value of 1200");
+            }
+
+            highScoreForArr = highScore;
+            xG = 0;
+            if (String.valueOf(highScoreForArr) !="0.0" ) {
+                saveScoreToFirebase(String.valueOf(tempPunchData.get(-1))); // Save data to the database
+
+                sendNotification("Punch Detected", "X Value: " + tempPunchData.get(-1)); // Send a notification to the user containing their punch data
+
+                punchData.add(highScoreForArr); // Add high score to punchData array
+                Log.i("testData", "PunchData array"+String.valueOf(punchData));
+                String[] punchArray = punchData.toArray(new String[0]);
+                Log.i("testData", String.valueOf(punchArray));
+            } else {
+                Log.i("testData", "Not sending data to firebase");
+            }
+        }
     }
 
-    private void uploadSpeedToFirebase(float speed) {
-        // Get a reference to the Firebase Realtime Database
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference("speeds");
+    private void saveScoreToFirebase(String highScore) {
+        PunchPowerModel punch = new PunchPowerModel(userNameGlobal, highScore);
 
-        // Create a unique ID for the new speed entry
-        String speedId = database.push().getKey();
+        // Create a unique key for the score entry
+        String key = dbRef.child("scores").push().getKey();
+        Log.i("Firebase-Save", "Generated key: " + key);
 
-        // If the ID is not null, save the speed value to the database
-        if (speedId != null) {
-            database.child(speedId).setValue(speed)
-                    .addOnSuccessListener(aVoid -> Log.i("Firebase", "Speed uploaded successfully"))
-                    .addOnFailureListener(e -> Log.e("Firebase", "Error uploading speed", e));
+        if (key != null) {
+            // Save the score under the "scores" path
+            dbRef.child("scores").child(key).setValue(punch)
+                    .addOnSuccessListener(aVoid -> Log.i("Firebase-Save", "Score saved successfully: " + highScore))
+                    .addOnFailureListener(e -> Log.e("Firebase-Save", "Error saving score", e));
+        } else {
+            Log.e("Firebase-Save", "Firebase key is null. Unable to save score.");
         }
+        ArrayAdapter<Object> refreshAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, highScoreArray);
+        loadScoresFromFirebase(refreshAdapter);
+    }
+
+    private void loadScoresFromFirebase(ArrayAdapter<Object> adapter) {
+        Log.i("Firebase-Load", "loadScoresFromFirebase called");
+        DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
+        scoresRef.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                highScoreArray.clear(); // Clear existing data to avoid duplicates
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
+                    Map<String, Object> score = (Map<String, Object>) snapshot.getValue();
+                    if (score != null) {
+                        highScoreArray.add(String.valueOf(score));
+                    }
+                }
+                adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to read scores", databaseError.toException());
+            }
+        });
     }
 
     public void TenPunchTest(View view) {
@@ -152,8 +234,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
          * have been recorded trigger the onPunchTestComplete method in
          * firebase_service.
          * */
-        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
 
+        HashMap<String, String> TenPunchTest = new HashMap<String, String>();
+        ArrayList<Integer> values = new ArrayList<Integer>();
+
+//        Log.i("testDataPunchTest", highScore)
         int count = 9;
         int counter = 0;
 
@@ -161,13 +246,13 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             counter++;
             if (i == count) {
                 Log.i("TenPunchTest", "I = " + i + " Count = " + count + " Counter: " + counter);
+                this.textView2 = findViewById(R.id.textView2);
+                textView2.setText("0");
+                values.add(2);
+                TenPunchTest.put("asdf", String.valueOf(values));
+                Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
             }
         }
-        this.textView2 = findViewById(R.id.textView2);
-        textView2.setText("50");
-
-        TenPunchTest.put("asdf", "50");
-        Log.i("TenPunchTestData", String.valueOf(TenPunchTest));
     }
 
     public void sendNotification(String titleText, String contentText) {
@@ -181,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             mNotificationManager.createNotificationChannel(notificationChannel);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(titleText)
                     .setContentText(contentText)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)

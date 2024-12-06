@@ -22,8 +22,8 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText registerUsernameInput, registerPasswordInput, emailInput;
     private Button registerButton, backToLoginButton;
 
-    private FirebaseAuth auth; // Firebase Authentication instance
-    private FirebaseFirestore db; // Firestore instance
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
         registerPasswordInput = findViewById(R.id.registerPassword);
         emailInput = findViewById(R.id.emailInput);
         registerButton = findViewById(R.id.registerButton);
-        backToLoginButton = findViewById(R.id.backToLoginButton);  // Find the new button
+        backToLoginButton = findViewById(R.id.backToLoginButton);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,7 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
             // Navigate to MainActivity (Login Activity)
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
-            finish(); // Close the RegisterActivity so the user cannot navigate back to it
+            finish();
         });
     }
 
@@ -113,7 +113,7 @@ public class RegisterActivity extends AppCompatActivity {
                     // Redirect to Login Activity (MainActivity)
                     Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                     startActivity(intent);
-                    finish(); // Close the current activity so that user can't navigate back to the register page
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(RegisterActivity.this, "Failed to save user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();

@@ -30,7 +30,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,13 +124,6 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
 
 
     public void dataReceived(float xG, float yG, float zG, float pitch, float roll) {
-        /*
-         * Handle data received from the Microbit.  Set the value threshold for data
-         * received from the Microbit. While the threshold has been exceeded, add
-         * data to a 'punch power' array. Once the threshold is no longer being exceeded,
-         * exit the loop and select the Highest value and send this to the TenPunchTest
-         * method to be sent to the database once Ten punches have been recorded.
-         * */
 
         ArrayList<Float> punchData = new ArrayList<Float>();
         ArrayList<Float> tempPunchData = new ArrayList<Float>();
@@ -154,7 +146,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                     tempPunchData.add(highScore);
                     Log.i("testDataPunchData", ""+tempPunchData);
                 }
-                // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
+                // once finished adding data to the tempPunchData listArray and take the final value
+                // from the array and add it to the listView value array
 
                 // Set the score textView
                 textView2.setText(""+highScore);
@@ -168,11 +161,11 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
             highScoreForArr = highScore;
             xG = 0;
             if (String.valueOf(highScoreForArr) !="0.0" ) {
-                saveScoreToFirebase(String.valueOf(tempPunchData.get(-1))); // Save data to the database
+                saveScoreToFirebase(String.valueOf(tempPunchData.get(-1)));
 
                 sendNotification("Punch Detected", "X Value: " + tempPunchData.get(-1)); // Send a notification to the user containing their punch data
 
-                punchData.add(highScoreForArr); // Add high score to punchData array
+                punchData.add(highScoreForArr);
                 Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
@@ -201,15 +194,17 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         loadScoresFromFirebase(refreshAdapter);
     }
 
+    // Use your desired path for scores
     private void loadScoresFromFirebase(ArrayAdapter<Object> adapter) {
         Log.i("Firebase-Load", "loadScoresFromFirebase called");
-        DatabaseReference scoresRef = dbRef.child("scores"); // Use your desired path for scores
+        DatabaseReference scoresRef = dbRef.child("scores");
         scoresRef.addValueEventListener(new ValueEventListener() {
 
             @Override
+            // Clear existing data to avoid duplicates
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
-                highScoreArray.clear(); // Clear existing data to avoid duplicates
+                highScoreArray.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Log.i("Firebase", "Firebase data returned"+String.valueOf(dataSnapshot));
@@ -218,7 +213,8 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
                         highScoreArray.add(String.valueOf(score));
                     }
                 }
-                adapter.notifyDataSetChanged(); // Notify adapter to refresh the ListView
+                // Notify adapter to refresh the ListView
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -238,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         HashMap<String, String> TenPunchTest = new HashMap<String, String>();
         ArrayList<Integer> values = new ArrayList<Integer>();
 
-//        Log.i("testDataPunchTest", highScore)
+//        Log.i("testDataPunchTest" highScore)
         int count = 9;
         int counter = 0;
 

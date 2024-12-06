@@ -21,7 +21,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText usernameInput, passwordInput;
     private Button loginButton;
-    private TextView registerLink; // Register link for navigating to RegisterActivity
+    private TextView registerLink;
     private DatabaseReference databaseReference;
     public static String userNameGlobal;
 
@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // Handle register link click
+        //register link click
         registerLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,12 +81,12 @@ public class LoginActivity extends AppCompatActivity {
         auth.signInWithEmailAndPassword(username, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Login successful, navigate to SheetActivity
+                        // Login successful navigate to SheetActivity
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
                             Log.d("MainActivity", "Login successful, user ID: " + user.getUid());
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear previous activity stack
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
                             userNameGlobal = username;
                             finish(); // Close login activity

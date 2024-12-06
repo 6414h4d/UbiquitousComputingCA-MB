@@ -137,61 +137,50 @@ public class MainActivity extends AppCompatActivity implements BLEListener {
         ArrayList<Float> tempPunchData = new ArrayList<Float>();
         this.textView2 = (TextView) findViewById(R.id.textView2);
 
-
         float currentScore= 0;
         // Set the threshold value to greater than 1200
         while (xG >= 1200) {
             // if current output from microbit is greater than the previously set highscore continue
             if(xG > highScore ) {
                 highScore = xG;
-                Log.i("testDatahighScore",String.valueOf(highScore)); // Log the current value for testing
+                // Log the current value for testing
 
-                tempPunchData.add(highScore); // add the current highest value to an array
-                Log.i("testDataPunchData", String.valueOf(tempPunchData));
+                // add the current highest value to an array
+                if(tempPunchData.size() < 1 ){
+                    if(tempPunchData.get(-1) < highScore ){
+                        tempPunchData.add(highScore);
+                    }
+                } else {
+                    tempPunchData.add(highScore);
+                    Log.i("testDataPunchData", ""+tempPunchData);
+                }
+                // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
 
-                tempPunchData.add(highScore); // once finished adding data to the tempPunchData listArray and take the final value (which should be the highest value) from the array and add it to the listView value array
+                // Set the score textView
+                textView2.setText(""+highScore);
 
-                // clear the tempPunchData
-                textView2.setText(""+highScore); // Set the score textView
                 // reset the highscore to 0
             } else{
                 // If the current value is not greater than the threshold value log a message to track
                 Log.i("testData", "Current output is not greater than threshold value of 1200");
             }
 
-
             highScoreForArr = highScore;
             xG = 0;
-            if (String.valueOf(highScoreForArr) != "0.0" ) {
-                // Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray()));
-                Float[] tempArray = tempPunchData.toArray(new Float[0]);
-                Log.i("ARRAYOUTPUT", Arrays.toString(tempPunchData.toArray(new Float[0])));
+            if (String.valueOf(highScoreForArr) !="0.0" ) {
+                saveScoreToFirebase(String.valueOf(tempPunchData.get(-1))); // Save data to the database
 
-                // select the highest value from the tempPunchArray and add it to the
+                sendNotification("Punch Detected", "X Value: " + tempPunchData.get(-1)); // Send a notification to the user containing their punch data
 
-                saveScoreToFirebase(String.valueOf(highScore)); // Save data to the database
-
-                sendNotification("Punch Detected", "X Value: " + highScoreForArr); // Send a notification to the user containing their punch data
                 punchData.add(highScoreForArr); // Add high score to punchData array
-
-                Log.i("testData", "PunchData array"+String.valueOf(punchData)); // Log the punchData
+                Log.i("testData", "PunchData array"+String.valueOf(punchData));
                 String[] punchArray = punchData.toArray(new String[0]);
                 Log.i("testData", String.valueOf(punchArray));
             } else {
                 Log.i("testData", "Not sending data to firebase");
             }
         }
-        highScore=0;
     }
-
-
-
-
-
-
-
-
-
 
     private void saveScoreToFirebase(String highScore) {
         PunchPowerModel punch = new PunchPowerModel(userNameGlobal, highScore);
